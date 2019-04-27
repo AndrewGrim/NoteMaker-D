@@ -1,0 +1,18 @@
+{
+	"name": "note-maker-d",
+	"authors": [
+		"Andrew Grim"
+	],
+	"dependencies": {
+		"tkd": "~>1.1.10"
+	},
+    "lflags": [
+        "-subsystem:windows"
+    ],
+    "sourceFiles-windows": [
+        "resources.res"
+    ],
+	"description": "A note making application written in D.",
+	"copyright": "Copyright © 2019, Andrew Grim",
+	"license": "MIT"
+}
