@@ -1,9 +1,7 @@
 module main;
 import tkd.tkdapplication;      
-import std.datetime;
 import std.stdio;         
 import std.conv;
-import std.random;
 
 class Application : TkdApplication {
 
@@ -13,7 +11,8 @@ class Application : TkdApplication {
 	override protected void initInterface() {
 
 		this.root = mainWindow()
-			.setTitle("Text Editor");
+			.setTitle("Text Editor")
+			.setOpacity(0.75);
 
 		auto frameMain = new Frame(root)    
 			.pack();
@@ -21,7 +20,10 @@ class Application : TkdApplication {
         this.textBody = new Text(frameMain)
             .setHeight(50)
             .setWidth(120)
-			//.setBackgroundColor("#F0F")
+			.appendText("aaaaaaaaaaaaAAAAAAAAAAAAAAA")
+			.setFont("Helvetica", 12)
+			.setForegroundColor("#00ff00")
+			.setBackgroundColor("#000000")
             .pack();
 
 
