@@ -6,11 +6,14 @@
 	"dependencies": {
 		"tkd": "~>1.1.10"
 	},
-    "lflags": [
-        "-subsystem:windows"
-    ],
     "sourceFiles-windows": [
         "resources.res"
+    ],
+	"stringImportPaths": [
+		"images/"
+	],
+    "lflags": [
+    	"-subsystem:windows"
     ],
 	"description": "A note making application written in D.",
 	"copyright": "Copyright © 2019, Andrew Grim",
