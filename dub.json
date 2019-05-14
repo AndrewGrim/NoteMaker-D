@@ -12,7 +12,7 @@
 	"stringImportPaths": [
 		"images/"
 	],
-    "lflags": [
+	"lflags": [
     	"-subsystem:windows"
     ],
 	"description": "A note making application written in D.",

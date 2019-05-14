@@ -18,7 +18,7 @@ class Application : TkdApplication {
     private Scale scale;
 
     private void openOpenFileDialog(CommandArgs args) {
-        
+		
 		auto openFile = new OpenFileDialog("Open a file")
 			.setMultiSelection(false)
 			.setDefaultExtension(".txt")
@@ -84,6 +84,42 @@ class Application : TkdApplication {
         }
 	} 	
 
+	private void openForegroundColorDialog(CommandArgs args) {
+		auto dialog = new ColorDialog("Choose a color")
+			.setInitialColor(Color.black)
+			.show();
+
+		this.textMain.setForegroundColor(dialog.getResult());
+		this.textMain.setInsertColor(dialog.getResult());
+	}
+
+	private void openBackgroundColorDialog(CommandArgs args) {
+		auto dialog = new ColorDialog("Choose a color")
+			.setInitialColor(Color.white)
+			.show();
+
+		this.textMain.setBackgroundColor(dialog.getResult());
+	}
+
+	private void openPreferencesWindow(CommandArgs args) {
+
+		auto preferencesWindow = new Window("Preferences", false)
+			.setGeometry(180, 60, root.getXPos() + root.getXPos() / 2, 400);
+
+		auto preferencesFrame = new Frame(preferencesWindow)
+			.pack();
+
+		auto changeForegroundColor = new Button(preferencesFrame, "Change Foreground Color")
+			.setCommand(&openForegroundColorDialog)
+			.pack();
+
+		auto changeBackgroundColor = new Button(preferencesFrame, "Change Background Color")
+			.setCommand(&openBackgroundColorDialog)
+			.pack();
+
+		// save the preferences to a file, to be read from for the defaults and preferences
+	}
+
     private void changeOpacity(CommandArgs args) {
         root.setOpacity(this.scale.getValue());
     }
@@ -136,6 +172,7 @@ class Application : TkdApplication {
     private void setUpKeyBindings() {
         root.bind("<Control-o>", &this.openOpenFileDialog); // Open
 		root.bind("<Control-s>", &this.openSaveFileDialog); // Save
+		root.bind("<Control-p>", &this.openPreferencesWindow); // Preferences
 	}
 
     /**
@@ -146,11 +183,11 @@ class Application : TkdApplication {
 		this.root = mainWindow()
             .setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
             .setGeometry(0, 0, 600, 50)
-            .setMinSize(700, 800)
-			.setOpacity(0.69);
+            .setMinSize(700, 800);
 
         this.root.setIdleCommand(delegate(CommandArgs args) {
             root.setTitle("Note Maker");
+			root.setOpacity(this.scale.getValue());
             root.setIdleCommand(args.callback, 3000);
         });
 
@@ -159,7 +196,8 @@ class Application : TkdApplication {
 		auto fileMenu = new Menu(menuBar, "File", 0)
 			.addEntry("Open", &this.openOpenFileDialog)
             .addEntry("Save", &this.openSaveFileDialog)
-			.addSeparator();
+			.addSeparator()
+			.addEntry("Preferences", &this.openPreferencesWindow);
 
 		auto noteBook   = new NoteBook();
 		auto mainPane = this.createMainPane();
@@ -170,6 +208,10 @@ class Application : TkdApplication {
 
 		//auto sizeGrip = new SizeGrip(root)
 		//	.pack(0, 0, GeometrySide.bottom, GeometryFill.none, AnchorPosition.southEast);
+
+        //Text[5] textlist;
+        //textlist[0] = textMain;
+        //textlist[0].setBackgroundColor("#FFF");
 
 		this.setUpKeyBindings();
 	}
