@@ -5,15 +5,28 @@
 	],
 	"dependencies": {
 		"tkd": "~>1.1.10"
-	},
-    "sourceFiles-windows": [
-        "resources.res"
-    ],
-	"stringImportPaths": [
-		"images/"
-	],
-	"lflags": [
-    	"-subsystem:windows"
+    },
+    "configurations": [
+        {
+            "name": "debug",
+            "targetType": "executable",
+            "stringImportPaths": [
+                "images/"
+            ]
+        },
+        {
+            "name": "release",
+            "targetType": "executable",
+            "stringImportPaths": [
+                "images/"
+            ],
+            "lflags": [
+                "-subsystem:windows"
+            ],
+            "sourceFiles-windows": [
+                "resources.res"
+            ]
+        }
     ],
 	"description": "A note making application written in D.",
 	"copyright": "Copyright © 2019, Andrew Grim",
