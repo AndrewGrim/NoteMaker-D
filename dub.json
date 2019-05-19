@@ -8,13 +8,6 @@
     },
     "configurations": [
         {
-            "name": "debug",
-            "targetType": "executable",
-            "stringImportPaths": [
-                "images/"
-            ]
-        },
-        {
             "name": "release",
             "targetType": "executable",
             "stringImportPaths": [
@@ -25,6 +18,13 @@
             ],
             "sourceFiles-windows": [
                 "resources.res"
+            ]
+        },
+        {
+            "name": "debug",
+            "targetType": "executable",
+            "stringImportPaths": [
+                "images/"
             ]
         }
     ],
