@@ -45,12 +45,14 @@ class Gui {
 
                     int iteration;
 
+                    // reading from file and adding each line into the "preferencesArray"
                     while (!f.eof()) {
                         string line = chomp(f.readln());
                         preferencesArray[iteration] = line;
                         iteration++;
                     }
 
+                    // spliting array values into aptly named variables
                     font = preferencesArray[0];
                     foreground = preferencesArray[1];
                     background = preferencesArray[2];
@@ -58,6 +60,7 @@ class Gui {
                     opacity = preferencesArray[4];
 
                 } catch (ErrnoException error) {
+                    // when the preferences files is not found it is created with default values
                     preferencesFileExists = false;
 
                     auto f = File(preferencesFile, "w");
@@ -72,6 +75,7 @@ class Gui {
                     .setHeight(5)
                     .setWidth(40)
                     .pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
+                    // tries to read in the values from file
                     try {
                         textMain
                             .setFont(font)
@@ -92,6 +96,7 @@ class Gui {
                     .setFromValue(0.2)
                     .setToValue(1.0)
                     .pack(0, 0, GeometrySide.bottom, GeometryFill.x, AnchorPosition.center, false);
+                    // tries to read values from file
                     try {
                         opacitySlider.setValue(opacity.to!float);
                     } catch (ErrnoException error) {
