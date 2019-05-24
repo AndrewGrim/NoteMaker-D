@@ -4,6 +4,7 @@ import tkd.tkdapplication;
 import std.stdio;         
 import std.file;
 import std.string;
+import std.path;
 
 // saving and opening methods
 class InputOutput {
@@ -13,15 +14,17 @@ class InputOutput {
     Text textMain;
     string fileToOpen;
     string fileToSave;
+	NoteBook noteBook;
 
     // constructor
-    this(Window root, Text textMain) {
+    this(Window root, Text textMain, NoteBook noteBook) {
         this.root = root;
         this.textMain = textMain;
-    }
+		this.noteBook = noteBook;
+	}
 
     // opens the openFile dialog allowing you to choose the file to load
-    public void openOpenFileDialog(CommandArgs args) {
+    public void openOpenFileDialog(CommandArgs args, Text[] textWidgetArray) {
 		
 		auto openFile = new OpenFileDialog("Open a file")
 			.setMultiSelection(false)
@@ -52,15 +55,16 @@ class InputOutput {
 
             f.close();
 
-            this.textMain.clear();
-            this.textMain.insertText(0, 0, fileContent);
+            textWidgetArray[noteBook.getCurrentTabId()].clear();
+            textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent);
+			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 
             root.setTitle("File opened: " ~ fileToOpen);
         }
 	}	
 
     // opens the saveFile dialog allowing you to choose where to save
-    public void openSaveFileDialog(CommandArgs args) {
+    public void openSaveFileDialog(CommandArgs args, Text[] textWidgetArray) {	
 
 		auto saveFile = new SaveFileDialog()
 			.setConfirmOverwrite(true)
@@ -81,9 +85,11 @@ class InputOutput {
 
             auto f = File(fileToSave, "w");
 
-            f.write(this.textMain.getText());
+            f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
 
             f.close();
+
+			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 
             root.setTitle("File saved: " ~ fileToSave);
         }

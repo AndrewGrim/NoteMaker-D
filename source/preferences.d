@@ -20,24 +20,30 @@ class Preferences {
     Button changeInsertColor;
     Button savePreferences;
     Button cancelPreferences;
+	NoteBook noteBook;
+	Text[] textWidgetArray;
 
     // constructor
-    this(Window root, Text textMain, Scale opacitySlider, string preferencesFile) {
+    this(Window root, Text textMain, Scale opacitySlider, string preferencesFile,
+		 NoteBook noteBook, Text[] textWidgetArray) {
+
         this.root = root;
         this.textMain = textMain;
         this.opacitySlider = opacitySlider;
         this.preferencesFile = preferencesFile;
+		this.noteBook = noteBook;
+		this.textWidgetArray = textWidgetArray;
 
         // sets up the command for the scale widget
         opacitySlider.setCommand(&this.changeOpacity);
     }
 
-    // creates the preferences window and displays its
-    public void openPreferencesWindow(CommandArgs args) {
+    // creates the preferences window and displays its contents
+    public void openPreferencesWindow(CommandArgs args, Text[] updateArray) {
 
         // sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false)
-			.setGeometry(250, 125, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50)
+			.setGeometry(250, 100, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50)
             .focus();            
 
         // the frame that holds all the widgets within the window
@@ -64,31 +70,24 @@ class Preferences {
 			.setCommand(&openInsertColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-        // creates the button for saving the preferences
-		this.savePreferences = new Button(preferencesFrame, "Save")
-            .setCommand(&savePreferencesToFile)
-            .pack(0, 0, GeometrySide.left, GeometryFill.x);
-
-        // creates the button for closing the preferences window
-		this.cancelPreferences = new Button(preferencesFrame, "Cancel")
-            .setCommand(&closePreferences)
-            .pack(0, 0, GeometrySide.right, GeometryFill.x);
-
         // sets up the keybindings for the preferences window
-        this.preferencesWindow.bind("<Control-s>", &this.savePreferencesToFile); // Save Preferences
         this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences
         this.preferencesWindow.bind("<Return>", &this.pressButton); // Clicks Button
+
+		textWidgetArray = updateArray;
 	}
 
     // opens the font dialog allowing you to choose the options
 	public void openFontDialog(CommandArgs args) {
 		auto dialog = new FontDialog("Choose a font")
 			.setCommand(delegate(CommandArgs args){
-				this.textMain.setFont(args.dialog.font);
+			for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setFont(args.dialog.font);
+			}
 			})
 			.show();
 
-            closePreferences(args);
+			savePreferencesToFile(args);
 	}
 
     // opens the color dialog allowing you to choose the foreground color
@@ -97,9 +96,11 @@ class Preferences {
 			.setInitialColor(Color.black)
 			.show();
 
-		this.textMain.setForegroundColor(dialog.getResult());
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setForegroundColor(dialog.getResult);
+		}
 
-        closePreferences(args);
+		savePreferencesToFile(args);
 	}
 
     // opens the color dialog allowing you to choose the background color
@@ -108,9 +109,11 @@ class Preferences {
 			.setInitialColor(Color.white)
 			.show();
 
-		this.textMain.setBackgroundColor(dialog.getResult());
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setBackgroundColor(dialog.getResult);
+		}
 
-        closePreferences(args);
+		savePreferencesToFile(args);
 	}
 
     // opens the color dialog allowing you to choose the insert color
@@ -119,12 +122,14 @@ class Preferences {
 			.setInitialColor(Color.black)
 			.show();
 
-		this.textMain.setInsertColor(dialog.getResult());
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setInsertColor(dialog.getResult);
+		}
 
-        closePreferences(args);
+		savePreferencesToFile(args);
 	}
 
-    // saves the current widget values to the "preferences.txt" fiel
+    // saves the current widget values to the "preferences.txt" file
     public void savePreferencesToFile(CommandArgs args) {
         auto f = File(preferencesFile, "w");
         f.write(textMain.getFont() ~ "\n");
@@ -133,6 +138,13 @@ class Preferences {
         f.write(textMain.getInsertColor() ~ "\n");
         f.write(opacitySlider.getValue());
         f.close();  
+
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setFont(textMain.getFont());
+			textWidgetArray[index].setForegroundColor(textMain.getForegroundColor());
+			textWidgetArray[index].setBackgroundColor(textMain.getBackgroundColor());
+			textWidgetArray[index].setInsertColor(textMain.getInsertColor());
+		}
 
         writeln("Preferences saved!");
         root.setTitle("Preferences saved!");
@@ -156,10 +168,8 @@ class Preferences {
             openForegroundColorDialog(args);
         } else if (changeBackgroundColor.inState(["focus"])) {
             openBackgroundColorDialog(args);
-        } else if (savePreferences.inState(["focus"])) {
-            savePreferencesToFile(args);
-        } else if (cancelPreferences.inState(["focus"])) {
-            closePreferences(args);
+        } else if (changeInsertColor.inState(["focus"])) {
+            openInsertColorDialog(args);
         }
     }
 

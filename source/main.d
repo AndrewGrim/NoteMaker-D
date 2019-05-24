@@ -2,16 +2,21 @@ module main;
 
 import tkd.tkdapplication;   
 import std.stdio;    
-import preferences, inputoutput, gui; // source imports
+import preferences, inputoutput, gui, tabs; // source imports
+import std.conv;
 
 // NoteMaker application.
 class Application : TkdApplication {
 
     // variables
 	Window root;
+	Gui gui;
+	Preferences pref;
+	InputOutput io;
+	Tabs tabs;
 
     // initialize user interface
-	override protected void initInterface() {
+	override public void initInterface() {
 
         // sets up root
 		this.root = mainWindow()
@@ -20,7 +25,7 @@ class Application : TkdApplication {
             .setMinSize(700, 800);
 
         // makes the code in "gui.d" usable in "main.d"
-        auto gui = new Gui(root);
+        gui = new Gui(root);
 
         // creates the noteBook and the default tab
 		auto noteBook = new NoteBook();
@@ -29,27 +34,35 @@ class Application : TkdApplication {
         // shows the noteBook adds the default tab to it
 		noteBook
 			.addTab("Main File", mainPane)
+			.enableKeyboardTraversal()
 			.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
         // makes the code in other files usable in "main.d"
-        auto pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile);
-        auto io = new InputOutput(root, gui.textMain);
+		io = new InputOutput(root, gui.textMain, noteBook);
+		tabs = new Tabs(root, noteBook, gui.textWidgetArray);
+		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, noteBook, gui.textWidgetArray);
 
         // create the menu bar at the top
         auto menuBar = new MenuBar(root);
 
         // sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
-			.addEntry("Open File...", &io.openOpenFileDialog)
-            .addEntry("Save As", &io.openSaveFileDialog)
+			.addEntry("Open File...", &openFile, "Ctrl+O")
+            .addEntry("Save As", &saveFile, "Ctrl+S")
 			.addSeparator()
-			.addEntry("Preferences", &pref.openPreferencesWindow)
+            .addEntry("New Tab", &tabs.createNewTab, "Ctrl-N")
+			.addEntry("Remove Tab", &tabs.removeTab, "Ctrl-W")
+            .addSeparator()
+			.addEntry("Preferences", &openPreferences, "Ctrl+P")
+			.addEntry("Next Tab", &nextTab, "Ctrl-Tab")
+			.addEntry("Previous Tab", &previousTab, "Ctrl-Shift-Tab")
             .addSeparator()
             .addEntry("Quit", &this.exitApplication);
 
         // runs every 3 seconds: resets the title 
         this.root.setIdleCommand(delegate(CommandArgs args) {
             root.setTitle("Note Maker");
+			root.setOpacity(gui.opacitySlider.getValue());
             root.setIdleCommand(args.callback, 3000);
         });
 
@@ -57,9 +70,11 @@ class Application : TkdApplication {
         root.setOpacity(gui.opacitySlider.getValue());
 
         // sets up the keybindings
-        root.bind("<Control-o>", &io.openOpenFileDialog); // Open
-		root.bind("<Control-s>", &io.openSaveFileDialog); // Save
-		root.bind("<Control-p>", &pref.openPreferencesWindow); // Preferences
+        root.bind("<Control-o>", &openFile); // Open
+		root.bind("<Control-s>", &saveFile); // Save
+		root.bind("<Control-n>", &tabs.createNewTab); // New Tab
+        root.bind("<Control-w>", &tabs.removeTab); // Close Tab
+		root.bind("<Control-p>", &openPreferences); // Preferences
         root.bind("<Control-q>", &this.exitApplication); // Quit
 		
         // checks if the preferences file exists if false creates one and tells you about it
@@ -68,6 +83,31 @@ class Application : TkdApplication {
                 .setDetailMessage("Preferences file could not be found and has been created!")
                 .show();
         }
+	}
+
+	// opens a file according to the dialog
+	public void openFile(CommandArgs args) {
+		io.openOpenFileDialog(args, tabs.updateArray());
+	}
+
+	// saves a file according to the dialog
+	public void saveFile(CommandArgs args) {
+		io.openSaveFileDialog(args, tabs.updateArray());
+	}
+
+	// opens the preferences window
+	public void openPreferences(CommandArgs args) {
+		pref.openPreferencesWindow(args, tabs.updateArray());
+	}
+
+	// selects the next tab unless its state is "hidden"
+	public void nextTab(CommandArgs args) {
+		tabs.nextTab(args);
+	}
+
+	// selects the previous tab unless its state is "hidden"
+	public void previousTab(CommandArgs args) {
+		tabs.previousTab(args);
 	}
 
     // quits the application.

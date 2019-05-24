@@ -1,42 +1,43 @@
-module gui;
+module tabs;
 
-import tkd.tkdapplication;      
-import std.stdio;         
+import tkd.tkdapplication;
+import std.stdio;
 import std.conv;
 import std.file;
 import std.string;
 import std.exception;
 
-// gui setup
-class Gui {
+// creating tabs etc.
+class Tabs {
 
-    // variables
+    //variables
     Window root;
-    Text textMain;
-    Scale opacitySlider;
-    string preferencesFile;
+    NoteBook noteBook;
+	Text[] textWidgetArray;
+	string preferencesFile;
     bool preferencesFileExists;
     string[] preferencesArray;
     string font, foreground, background, insert;
     string opacity = "1.0";
-	Text[] textWidgetArray;
 
-    // constructor
-    this(Window root) {
+    //constructor
+    this(Window root, NoteBook noteBook, Text[] textWidgetArray) {
         this.root = root;
+        this.noteBook = noteBook;
+		this.textWidgetArray = textWidgetArray;
     }
 
-    // creates the main pane for the "noteBook"
-    public Frame createMainPane() {
+	// creates a new tab and adds it to the "noteBook"
+    public void createNewTab(CommandArgs args) {
         
         // the main frame that gets returned to be used by the "noteBook"
-        auto frameMain = new Frame(root);
+		auto frameMain = new Frame(root);
 
             // the frame containing all the widgets
             auto container = new Frame(frameMain)
                 .pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
-                // tries to read options from the "preferences.txt" file, if it fails the file is created with default values
+				// tries to read options from the "preferences.txt" file, if it fails the file is created with default values
 				try {
                     preferencesFile = getcwd() ~ "/preferences.txt";
                     
@@ -68,14 +69,14 @@ class Gui {
                     writeln("Failed to read preferences file! Preferences file created!");
                 }
 
-                // creates the "textMain" widget and sets the options if the "preferences.txt" file exists
-                this.textMain = new Text(container)
+                // creates the "textWidget"
+                auto textWidget = new Text(container)
                     .setHeight(5)
                     .setWidth(40)
                     .pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
-                    // tries to read in the values from file
+					// tries to read in the values from file
                     try {
-                        textMain
+                        textWidget
                             .setFont(font)
                             .setForegroundColor(foreground)
                             .setBackgroundColor(background)
@@ -83,29 +84,43 @@ class Gui {
                     } catch (ErrnoException error) {
                         writeln("Custom text widget options couldn't be set!");
                     }
-				
-				// adds the text widget to the array to keep track of it
-				textWidgetArray ~= textMain;
 
-                // creates the vertical "yscroll" widget for use with "textMain"
-                auto yscroll = new YScrollBar(container)
-                    .attachWidget(textMain)
+                // creates the vertical "yscrollWidget" for use with "textWidget"
+                auto yscrollWidget = new YScrollBar(container)
+                    .attachWidget(textWidget)
                     .pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
-                // creates the scale "opacitySlider" for changing the opacity/alpha setting
-                this.opacitySlider = new Scale()
-                    .setFromValue(0.2)
-                    .setToValue(1.0)
-                    .pack(0, 0, GeometrySide.bottom, GeometryFill.x, AnchorPosition.center, false);
-                    // tries to read values from file
-                    try {
-                        opacitySlider.setValue(opacity.to!float);
-                    } catch (ErrnoException error) {
-                        writeln("Custom opacity couldn't be set!");
-                    } catch (ConvException convError) {
-                        writeln("Couldn't convert opacity string to float!");
-                    }
+        noteBook.addTab("New File", frameMain);
+		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
 
-        return frameMain;
+		textWidgetArray ~= textWidget;
     }
+
+	// updates the array to include all the currently existing Text widgets
+	public Text[] updateArray() {
+		return textWidgetArray;
+	}
+
+	// "removes" the tab by hiding it to keep the index consistent
+	public void removeTab(CommandArgs args) {
+		noteBook.hideTab("current");
+	}
+
+	// selects the next tab unless its state is "hidden"
+	public void nextTab(CommandArgs args) {
+		if (noteBook.tabState(noteBook.getCurrentTabId() + 1) == "hidden") {
+			writeln("The tab is hidden!");
+		} else {
+			noteBook.selectTab(noteBook.getCurrentTabId() + 1);
+		}
+	}
+
+	// selects the previous tab unless its state is "hidden"
+	public void previousTab(CommandArgs args) {
+		if (noteBook.tabState(noteBook.getCurrentTabId() - 1) == "hidden") {
+			writeln("The tab is hidden!");
+		} else {
+			noteBook.selectTab(noteBook.getCurrentTabId() - 1);
+		}
+	}
 }
