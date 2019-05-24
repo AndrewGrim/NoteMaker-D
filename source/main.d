@@ -52,12 +52,12 @@ class Application : TkdApplication {
 			.addSeparator()
             .addEntry("New Tab", &tabs.createNewTab, "Ctrl+N")
 			.addEntry("Remove Tab", &tabs.removeTab, "Ctrl+W")
-            .addSeparator()
-			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addEntry("Next Tab", &nextTab, "Ctrl+Tab")
 			.addEntry("Previous Tab", &previousTab, "Ctrl+Shift+Tab")
             .addSeparator()
-            .addEntry("Quit", &this.exitApplication);
+			.addEntry("Preferences", &openPreferences, "Ctrl+P")
+            .addSeparator()
+            .addEntry("Quit", &this.exitApplication, "Ctrl+Q");
 
         // runs every 3 seconds: resets the title 
         this.root.setIdleCommand(delegate(CommandArgs args) {

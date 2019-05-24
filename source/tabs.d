@@ -108,19 +108,41 @@ class Tabs {
 
 	// selects the next tab unless its state is "hidden"
 	public void nextTab(CommandArgs args) {
+
+		int iteration = 2;
+
 		if (noteBook.tabState(noteBook.getCurrentTabId() + 1) == "hidden") {
-			writeln("The tab is hidden!");
-		} else {
-			noteBook.selectTab(noteBook.getCurrentTabId() + 1);
+			while (true) {
+				if (noteBook.tabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
+					writeln("Tab still hidden!");
+					iteration++;
+				} else {
+					writeln("Normal tab!");
+					break;
+				}
+			}
 		}
+
+		noteBook.selectTab(noteBook.getCurrentTabId() + iteration);
 	}
 
 	// selects the previous tab unless its state is "hidden"
 	public void previousTab(CommandArgs args) {
+
+		int iteration = 2;
+
 		if (noteBook.tabState(noteBook.getCurrentTabId() - 1) == "hidden") {
-			writeln("The tab is hidden!");
-		} else {
-			noteBook.selectTab(noteBook.getCurrentTabId() - 1);
+			while (true) {
+				if (noteBook.tabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
+					writeln("Tab still hidden!");
+					iteration++;
+				} else {
+					writeln("Normal tab!");
+					break;
+				}
+			}
 		}
+
+		noteBook.selectTab(noteBook.getCurrentTabId() - iteration);
 	}
 }

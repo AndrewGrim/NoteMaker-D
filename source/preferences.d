@@ -44,7 +44,7 @@ class Preferences {
         // sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
 			version (Windows) {
-				preferencesWindow.setGeometry(250, 120, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
+				preferencesWindow.setGeometry(250, 125, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
 			} else {
 				preferencesWindow.setGeometry(250, 140, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
 			}
