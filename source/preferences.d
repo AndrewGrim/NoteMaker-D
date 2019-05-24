@@ -43,7 +43,7 @@ class Preferences {
 
         // sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false)
-			.setGeometry(250, 100, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50)
+			.setGeometry(250, 140, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50)
             .focus();            
 
         // the frame that holds all the widgets within the window
@@ -69,6 +69,10 @@ class Preferences {
 		this.changeInsertColor = new Button(preferencesFrame, "Change Insert Color")
 			.setCommand(&openInsertColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
+
+		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
+			.setCommand(&savePreferencesToFile)
+			.pack(0, 0, GeometrySide.bottom, GeometryFill.x);
 
         // sets up the keybindings for the preferences window
         this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences

@@ -50,12 +50,12 @@ class Application : TkdApplication {
 			.addEntry("Open File...", &openFile, "Ctrl+O")
             .addEntry("Save As", &saveFile, "Ctrl+S")
 			.addSeparator()
-            .addEntry("New Tab", &tabs.createNewTab, "Ctrl-N")
-			.addEntry("Remove Tab", &tabs.removeTab, "Ctrl-W")
+            .addEntry("New Tab", &tabs.createNewTab, "Ctrl+N")
+			.addEntry("Remove Tab", &tabs.removeTab, "Ctrl+W")
             .addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
-			.addEntry("Next Tab", &nextTab, "Ctrl-Tab")
-			.addEntry("Previous Tab", &previousTab, "Ctrl-Shift-Tab")
+			.addEntry("Next Tab", &nextTab, "Ctrl+Tab")
+			.addEntry("Previous Tab", &previousTab, "Ctrl+Shift+Tab")
             .addSeparator()
             .addEntry("Quit", &this.exitApplication);
 
