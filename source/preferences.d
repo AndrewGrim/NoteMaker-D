@@ -42,9 +42,13 @@ class Preferences {
     public void openPreferencesWindow(CommandArgs args, Text[] updateArray) {
 
         // sets up the window relative to root
-		this.preferencesWindow = new Window("Preferences", false)
-			.setGeometry(250, 140, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50)
-            .focus();            
+		this.preferencesWindow = new Window("Preferences", false);
+			version (Windows) {
+				preferencesWindow.setGeometry(250, 120, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
+			} else {
+				preferencesWindow.setGeometry(250, 140, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
+			}
+            preferencesWindow.focus();            
 
         // the frame that holds all the widgets within the window
 		this.preferencesFrame = new Frame(preferencesWindow)
