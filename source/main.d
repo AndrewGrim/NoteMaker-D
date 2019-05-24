@@ -34,7 +34,6 @@ class Application : TkdApplication {
         // shows the noteBook adds the default tab to it
 		noteBook
 			.addTab("Main File", mainPane)
-			.enableKeyboardTraversal()
 			.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
         // makes the code in other files usable in "main.d"
@@ -48,16 +47,17 @@ class Application : TkdApplication {
         // sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
 			.addEntry("Open File...", &openFile, "Ctrl+O")
-            .addEntry("Save As", &saveFile, "Ctrl+S")
+			.addEntry("Save As", &saveFile, "Ctrl+S")
 			.addSeparator()
-            .addEntry("New Tab", &tabs.createNewTab, "Ctrl+N")
-			.addEntry("Remove Tab", &tabs.removeTab, "Ctrl+W")
-			.addEntry("Next Tab", &nextTab, "Ctrl+Tab")
-			.addEntry("Previous Tab", &previousTab, "Ctrl+Shift+Tab")
-            .addSeparator()
+			.addEntry("New Tab", &tabs.createNewTab, "Ctrl+T")
+			.addEntry("Close Tab", &tabs.closeTab, "Ctrl+W")
+			.addEntry("Next Tab", &nextTab, "Ctrl+1")
+			.addEntry("Previous Tab", &previousTab, "Ctrl+2") 
+			.addEntry("Reopen Closed Tab", &reopenClosedTab, "Ctrl+Alt+T")
+			.addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
-            .addSeparator()
-            .addEntry("Quit", &this.exitApplication, "Ctrl+Q");
+			.addSeparator()
+			.addEntry("Quit", &this.exitApplication, "Ctrl+Q");
 
         // runs every 3 seconds: resets the title 
         this.root.setIdleCommand(delegate(CommandArgs args) {
@@ -70,12 +70,15 @@ class Application : TkdApplication {
         root.setOpacity(gui.opacitySlider.getValue());
 
         // sets up the keybindings
-        root.bind("<Control-o>", &openFile); // Open
+		root.bind("<Control-o>", &openFile); // Open
 		root.bind("<Control-s>", &saveFile); // Save
-		root.bind("<Control-n>", &tabs.createNewTab); // New Tab
-        root.bind("<Control-w>", &tabs.removeTab); // Close Tab
+		root.bind("<Control-t>", &tabs.createNewTab); // New Tab
+		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
+		root.bind("<Control-KeyPress-1>", &nextTab); // Next Tab
+		root.bind("<Control-KeyPress-2>", &previousTab); // Previous Tab
+		root.bind("<Control-Alt-t>", &reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
-        root.bind("<Control-q>", &this.exitApplication); // Quit
+		root.bind("<Control-q>", &this.exitApplication); // Quit
 		
         // checks if the preferences file exists if false creates one and tells you about it
         if (!gui.preferencesFileExists) {
@@ -100,14 +103,19 @@ class Application : TkdApplication {
 		pref.openPreferencesWindow(args, tabs.updateArray());
 	}
 
-	// selects the next tab unless its state is "hidden"
+	// selects the next tab
 	public void nextTab(CommandArgs args) {
 		tabs.nextTab(args);
 	}
 
-	// selects the previous tab unless its state is "hidden"
+	// selects the previous tab
 	public void previousTab(CommandArgs args) {
 		tabs.previousTab(args);
+	}
+
+	// reopens the last closed tab
+	public void reopenClosedTab(CommandArgs args) {
+		tabs.reopenClosedTab(args);
 	}
 
     // quits the application.

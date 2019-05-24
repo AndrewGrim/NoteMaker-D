@@ -19,6 +19,7 @@ class Tabs {
     string[] preferencesArray;
     string font, foreground, background, insert;
     string opacity = "1.0";
+	int lastClosedTab;
 
     //constructor
     this(Window root, NoteBook noteBook, Text[] textWidgetArray) {
@@ -94,6 +95,7 @@ class Tabs {
 		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
 
 		textWidgetArray ~= textWidget;
+		textWidget.focus();
     }
 
 	// updates the array to include all the currently existing Text widgets
@@ -101,12 +103,14 @@ class Tabs {
 		return textWidgetArray;
 	}
 
-	// "removes" the tab by hiding it to keep the index consistent
-	public void removeTab(CommandArgs args) {
+	// closes the tab by hiding it to keep the index consistent
+	public void closeTab(CommandArgs args) {
+		lastClosedTab = noteBook.getCurrentTabId();
 		noteBook.hideTab("current");
+		textWidgetArray[noteBook.getCurrentTabId()].focus();
 	}
 
-	// selects the next tab unless its state is "hidden"
+	// selects the next tab
 	public void nextTab(CommandArgs args) {
 
 		int iteration = 2;
@@ -121,19 +125,22 @@ class Tabs {
 					break;
 				}
 			}
+			noteBook.selectTab(noteBook.getCurrentTabId() + iteration);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
+		} else {
+			noteBook.selectTab(noteBook.getCurrentTabId() + 1);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		}
-
-		noteBook.selectTab(noteBook.getCurrentTabId() + iteration);
 	}
 
-	// selects the previous tab unless its state is "hidden"
+	// selects the previous tab
 	public void previousTab(CommandArgs args) {
 
 		int iteration = 2;
 
 		if (noteBook.tabState(noteBook.getCurrentTabId() - 1) == "hidden") {
 			while (true) {
-				if (noteBook.tabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
+				if (noteBook.tabState(noteBook.getCurrentTabId() - iteration) == "hidden") {
 					writeln("Tab still hidden!");
 					iteration++;
 				} else {
@@ -141,8 +148,17 @@ class Tabs {
 					break;
 				}
 			}
+			noteBook.selectTab(noteBook.getCurrentTabId() - iteration);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
+		} else {
+			noteBook.selectTab(noteBook.getCurrentTabId() - 1);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		}
+	}
 
-		noteBook.selectTab(noteBook.getCurrentTabId() - iteration);
+	// reopens the last closed tab
+	public void reopenClosedTab(CommandArgs args) {
+		noteBook.selectTab(lastClosedTab);
+		textWidgetArray[noteBook.getCurrentTabId()].focus();
 	}
 }
