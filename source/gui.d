@@ -92,6 +92,8 @@ class Gui {
                     .attachWidget(textMain)
                     .pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
+				this.textMain.attachYScrollBar(yscroll);
+
                 // creates the scale "opacitySlider" for changing the opacity/alpha setting
                 this.opacitySlider = new Scale()
                     .setFromValue(0.2)

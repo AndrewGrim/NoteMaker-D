@@ -53,7 +53,7 @@ class Application : TkdApplication {
 			.addEntry("Close Tab", &tabs.closeTab, "Ctrl+W")
 			.addEntry("Next Tab", &nextTab, "Ctrl+1")
 			.addEntry("Previous Tab", &previousTab, "Ctrl+2") 
-			.addEntry("Reopen Closed Tab", &reopenClosedTab, "Ctrl+Alt+T")
+			.addEntry("Reopen Closed Tab", &reopenClosedTab, "Ctrl+3")
 			.addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
@@ -76,7 +76,7 @@ class Application : TkdApplication {
 		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
 		root.bind("<Control-KeyPress-1>", &nextTab); // Next Tab
 		root.bind("<Control-KeyPress-2>", &previousTab); // Previous Tab
-		root.bind("<Control-Alt-t>", &reopenClosedTab); // Reopen Closed Tab
+		root.bind("<Control-KeyPress-3>", &reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-q>", &this.exitApplication); // Quit
 		

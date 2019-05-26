@@ -19,7 +19,7 @@ class Tabs {
     string[] preferencesArray;
     string font, foreground, background, insert;
     string opacity = "1.0";
-	int lastClosedTab;
+	int[] lastClosedTab;
 
     //constructor
     this(Window root, NoteBook noteBook, Text[] textWidgetArray) {
@@ -91,6 +91,8 @@ class Tabs {
                     .attachWidget(textWidget)
                     .pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
+				textWidget.attachYScrollBar(yscrollWidget);
+
         noteBook.addTab("New File", frameMain);
 		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
 
@@ -105,7 +107,7 @@ class Tabs {
 
 	// closes the tab by hiding it to keep the index consistent
 	public void closeTab(CommandArgs args) {
-		lastClosedTab = noteBook.getCurrentTabId();
+		lastClosedTab ~= noteBook.getCurrentTabId();
 		noteBook.hideTab("current");
 		textWidgetArray[noteBook.getCurrentTabId()].focus();
 	}
@@ -115,9 +117,9 @@ class Tabs {
 
 		int iteration = 2;
 
-		if (noteBook.tabState(noteBook.getCurrentTabId() + 1) == "hidden") {
+		if (noteBook.getTabState(noteBook.getCurrentTabId() + 1) == "hidden") {
 			while (true) {
-				if (noteBook.tabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
+				if (noteBook.getTabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
 					writeln("Tab still hidden!");
 					iteration++;
 				} else {
@@ -138,9 +140,9 @@ class Tabs {
 
 		int iteration = 2;
 
-		if (noteBook.tabState(noteBook.getCurrentTabId() - 1) == "hidden") {
+		if (noteBook.getTabState(noteBook.getCurrentTabId() - 1) == "hidden") {
 			while (true) {
-				if (noteBook.tabState(noteBook.getCurrentTabId() - iteration) == "hidden") {
+				if (noteBook.getTabState(noteBook.getCurrentTabId() - iteration) == "hidden") {
 					writeln("Tab still hidden!");
 					iteration++;
 				} else {
@@ -158,7 +160,12 @@ class Tabs {
 
 	// reopens the last closed tab
 	public void reopenClosedTab(CommandArgs args) {
-		noteBook.selectTab(lastClosedTab);
-		textWidgetArray[noteBook.getCurrentTabId()].focus();
+		for (int index = 1; index <= lastClosedTab.length; index++) { 
+			if (noteBook.getTabState(lastClosedTab[$ - index]) == "hidden") {
+				noteBook.selectTab(lastClosedTab[$ - index]);
+				textWidgetArray[noteBook.getCurrentTabId()].focus();
+				break;
+			} 
+		}
 	}
 }
