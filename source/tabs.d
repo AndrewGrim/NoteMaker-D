@@ -14,11 +14,6 @@ class Tabs {
     Window root;
     NoteBook noteBook;
 	Text[] textWidgetArray;
-	string preferencesFile;
-    bool preferencesFileExists;
-    string[] preferencesArray;
-    string font, foreground, background, insert;
-    string opacity = "1.0";
 	int[] lastClosedTab;
 
     //constructor
@@ -38,53 +33,17 @@ class Tabs {
             auto container = new Frame(frameMain)
                 .pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
-				// tries to read options from the "preferences.txt" file, if it fails the file is created with default values
-				try {
-                    preferencesFile = getcwd() ~ "/preferences.txt";
-                    
-                    auto f = File(preferencesFile, "r");
-
-                    preferencesFileExists = true;
-
-                    // reading from file and adding each line into the "preferencesArray"
-                    while (!f.eof()) {
-                        string line = chomp(f.readln());
-						preferencesArray ~= line;
-                    }
-
-                    // spliting array values into aptly named variables
-                    font = preferencesArray[0];
-                    foreground = preferencesArray[1];
-                    background = preferencesArray[2];
-                    insert = preferencesArray[3];
-                    opacity = preferencesArray[4];
-
-                } catch (ErrnoException error) {
-                    // when the preferences files is not found it is created with default values
-                    preferencesFileExists = false;
-
-                    auto f = File(preferencesFile, "w");
-                    f.write("Helvetica\n#000000\n#ffffff\n#000000\n1.0");
-                    f.close();
-
-                    writeln("Failed to read preferences file! Preferences file created!");
-                }
+				Text textMain = textWidgetArray[0];
 
                 // creates the "textWidget"
                 auto textWidget = new Text(container)
                     .setHeight(5)
                     .setWidth(40)
+					.setFont(textMain.getFont())
+					.setForegroundColor(textMain.getForegroundColor())
+					.setBackgroundColor(textMain.getBackgroundColor())
+					.setInsertColor(textMain.getInsertColor())
                     .pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
-					// tries to read in the values from file
-                    try {
-                        textWidget
-                            .setFont(font)
-                            .setForegroundColor(foreground)
-                            .setBackgroundColor(background)
-                            .setInsertColor(insert);
-                    } catch (ErrnoException error) {
-                        writeln("Custom text widget options couldn't be set!");
-                    }
 
                 // creates the vertical "yscrollWidget" for use with "textWidget"
                 auto yscrollWidget = new YScrollBar(container)
