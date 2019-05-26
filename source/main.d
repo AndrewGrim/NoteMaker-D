@@ -47,7 +47,8 @@ class Application : TkdApplication {
         // sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
 			.addEntry("Open File...", &openFile, "Ctrl+O")
-			.addEntry("Save As", &saveFile, "Ctrl+S")
+			.addEntry("Save", &saveFile, "Ctrl+S")
+			.addEntry("Save As", &saveFileAs, "Ctrl+Alt+S")
 			.addSeparator()
 			.addEntry("New Tab", &tabs.createNewTab, "Ctrl+T")
 			.addEntry("Close Tab", &tabs.closeTab, "Ctrl+W")
@@ -70,8 +71,9 @@ class Application : TkdApplication {
         root.setOpacity(gui.opacitySlider.getValue());
 
         // sets up the keybindings
-		root.bind("<Control-o>", &openFile); // Open
+		root.bind("<Control-o>", &openFile); // Open#
 		root.bind("<Control-s>", &saveFile); // Save
+		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
 		root.bind("<Control-t>", &tabs.createNewTab); // New Tab
 		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
 		root.bind("<Control-KeyPress-1>", &nextTab); // Next Tab
@@ -93,8 +95,12 @@ class Application : TkdApplication {
 		io.openOpenFileDialog(args, tabs.updateArray());
 	}
 
-	// saves a file according to the dialog
 	public void saveFile(CommandArgs args) {
+		io.saveFile(args, tabs.updateArray());
+	}
+
+	// saves a file according to the dialog
+	public void saveFileAs(CommandArgs args) {
 		io.openSaveFileDialog(args, tabs.updateArray());
 	}
 

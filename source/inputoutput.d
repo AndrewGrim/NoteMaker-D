@@ -94,4 +94,21 @@ class InputOutput {
             root.setTitle("File saved: " ~ fileToSave);
         }
 	}
+
+	// saves the file
+    public void saveFile(CommandArgs args, Text[] textWidgetArray) {	
+
+        fileToSave = getcwd() ~ "/note.txt";
+        writeln(fileToSave);
+
+		auto f = File(fileToSave, "w");
+
+		f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
+
+		f.close();
+
+		noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
+
+		root.setTitle("File saved: " ~ fileToSave);
+	}
 }
