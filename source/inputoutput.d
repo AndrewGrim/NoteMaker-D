@@ -15,6 +15,7 @@ class InputOutput {
     string fileToOpen;
     string fileToSave;
 	NoteBook noteBook;
+	string[string] tabNameFilePath;
 
     // constructor
     this(Window root, Text textMain, NoteBook noteBook) {
@@ -36,7 +37,7 @@ class InputOutput {
 			.show();
 
         fileToOpen = openFile.getResult();
-        writeln(fileToOpen);
+        writeln("opening: ", fileToOpen);
 
         if (openFile.getResult() == "") {
 
@@ -60,6 +61,8 @@ class InputOutput {
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 
             root.setTitle("File opened: " ~ fileToOpen);
+
+			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
         }
 	}	
 
@@ -75,7 +78,7 @@ class InputOutput {
 			.show();
 
         fileToSave = saveFile.getResult();
-        writeln(fileToSave);
+        writeln("saving as: ", fileToSave);
 
         if (saveFile.getResult() == "") {
 
@@ -92,23 +95,34 @@ class InputOutput {
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 
             root.setTitle("File saved: " ~ fileToSave);
+
+			tabNameFilePath[baseName(fileToSave)] = fileToSave;
         }
 	}
 
 	// saves the file
-    public void saveFile(CommandArgs args, Text[] textWidgetArray) {	
+    public void saveFile(CommandArgs args, Text[] textWidgetArray) {
 
-        fileToSave = getcwd() ~ "/note.txt";
-        writeln(fileToSave);
+		if (noteBook.getTabText(noteBook.getCurrentTabId()) == "Main File" || 
+			noteBook.getTabText(noteBook.getCurrentTabId()) == "New File") {
+			openSaveFileDialog(args, textWidgetArray);
+		} else {
+			fileToSave = tabNameFilePath.get(noteBook.getTabText(noteBook.getCurrentTabId()), "Record does not exist!");
+			if (fileToSave == "Record does not exist!") {
+				writeln("Save cancelled! Path could not be found!");
+			} else {
+				writeln("saving: ", fileToSave);
+		
+				auto f = File(fileToSave, "w");
 
-		auto f = File(fileToSave, "w");
+				f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
 
-		f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
+				f.close();
 
-		f.close();
+				noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 
-		noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
-
-		root.setTitle("File saved: " ~ fileToSave);
+				root.setTitle("File saved: " ~ fileToSave);
+			}
+		}
 	}
 }

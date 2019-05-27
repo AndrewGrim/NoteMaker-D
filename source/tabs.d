@@ -54,9 +54,9 @@ class Tabs {
 
         noteBook.addTab("New File", frameMain);
 		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
+		textWidget.focus();
 
 		textWidgetArray ~= textWidget;
-		textWidget.focus();
     }
 
 	// updates the array to include all the currently existing Text widgets
@@ -68,6 +68,7 @@ class Tabs {
 	public void closeTab(CommandArgs args) {
 		lastClosedTab ~= noteBook.getCurrentTabId();
 		noteBook.hideTab("current");
+
 		textWidgetArray[noteBook.getCurrentTabId()].focus();
 	}
 

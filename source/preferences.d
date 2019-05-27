@@ -43,16 +43,12 @@ class Preferences {
 
         // sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
-			version (Windows) {
-				preferencesWindow.setGeometry(250, 125, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
-			} else {
-				preferencesWindow.setGeometry(250, 140, root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
-			}
+			preferencesWindow.setWindowPositon(root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
             preferencesWindow.focus();            
 
         // the frame that holds all the widgets within the window
 		this.preferencesFrame = new Frame(preferencesWindow)
-			.pack();
+			.pack(10, 10);
 
         // creates the button for changing the font
 		this.changeFont = new Button(preferencesFrame, "Change Font")
@@ -76,7 +72,7 @@ class Preferences {
 
 		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
 			.setCommand(&savePreferencesToFile)
-			.pack(0, 0, GeometrySide.bottom, GeometryFill.x);
+			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
         // sets up the keybindings for the preferences window
         this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences
