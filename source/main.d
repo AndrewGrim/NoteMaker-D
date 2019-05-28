@@ -52,9 +52,9 @@ class Application : TkdApplication {
 			.addSeparator()
 			.addEntry("New Tab", &tabs.createNewTab, "Ctrl+T")
 			.addEntry("Close Tab", &tabs.closeTab, "Ctrl+W")
-			.addEntry("Next Tab", &nextTab, "Ctrl+1")
-			.addEntry("Previous Tab", &previousTab, "Ctrl+2") 
-			.addEntry("Reopen Closed Tab", &reopenClosedTab, "Ctrl+3")
+			.addEntry("Next Tab", &tabs.nextTab, "Ctrl+1")
+			.addEntry("Previous Tab", &tabs.previousTab, "Ctrl+2") 
+			.addEntry("Reopen Closed Tab", &tabs.reopenClosedTab, "Ctrl+3")
 			.addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
@@ -76,9 +76,9 @@ class Application : TkdApplication {
 		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
 		root.bind("<Control-t>", &tabs.createNewTab); // New Tab
 		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
-		root.bind("<Control-KeyPress-1>", &nextTab); // Next Tab
-		root.bind("<Control-KeyPress-2>", &previousTab); // Previous Tab
-		root.bind("<Control-KeyPress-3>", &reopenClosedTab); // Reopen Closed Tab
+		root.bind("<Control-KeyPress-1>", &tabs.nextTab); // Next Tab
+		root.bind("<Control-KeyPress-2>", &tabs.previousTab); // Previous Tab
+		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-q>", &this.exitApplication); // Quit
 		
@@ -107,21 +107,6 @@ class Application : TkdApplication {
 	// opens the preferences window
 	public void openPreferences(CommandArgs args) {
 		pref.openPreferencesWindow(args, tabs.updateArray());
-	}
-
-	// selects the next tab
-	public void nextTab(CommandArgs args) {
-		tabs.nextTab(args);
-	}
-
-	// selects the previous tab
-	public void previousTab(CommandArgs args) {
-		tabs.previousTab(args);
-	}
-
-	// reopens the last closed tab
-	public void reopenClosedTab(CommandArgs args) {
-		tabs.reopenClosedTab(args);
 	}
 
     // quits the application.
