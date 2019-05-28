@@ -1,9 +1,11 @@
 module main;
 
 import tkd.tkdapplication;   
-import std.stdio;    
-import preferences, inputoutput, gui, tabs; // source imports
+import std.stdio;
 import std.conv;
+import std.string;    
+import std.algorithm;
+import preferences, inputoutput, gui, tabs; // source imports
 
 // NoteMaker application.
 class Application : TkdApplication {
@@ -58,6 +60,7 @@ class Application : TkdApplication {
 			.addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
+			.addEntry("Syntax Highlight", &this.highlight, "Ctrl+L")
 			.addEntry("Quit", &this.exitApplication, "Ctrl+Q");
 
         // runs every 3 seconds: resets the title 
@@ -81,6 +84,7 @@ class Application : TkdApplication {
 		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-q>", &this.exitApplication); // Quit
+		root.bind("<Control-l>", &this.highlight);
 		
         // checks if the preferences file exists if false creates one and tells you about it
         if (!gui.preferencesFileExists) {
@@ -107,6 +111,96 @@ class Application : TkdApplication {
 	// opens the preferences window
 	public void openPreferences(CommandArgs args) {
 		pref.openPreferencesWindow(args, tabs.updateArray());
+	}
+
+	// !Testing! highlights the defined syntax
+	public void highlight(CommandArgs args) {
+		tabs.updateArray()[0]
+			.configTag("red", "-foreground red")
+			.configTag("orange", "-foreground orange")
+			.configTag("yellow", "-foreground yellow")
+			.configTag("green", "-foreground greed")
+			.configTag("blue", "-foreground blue")
+			.configTag("indigo", "-foreground indigo")
+			.configTag("violet", "-foreground violet")
+			.configTag("white", "-foreground white");
+
+		string fileToOpen = "C:/Users/Grim/Desktop/Dropbox/GitHub/PasswordGenerator-D/source/main.d";
+		
+		auto f = File(fileToOpen, "r");
+
+			string fileContent;
+
+            while (!f.eof()) { 
+                string line = chomp(f.readln()); 
+                fileContent ~= line ~ "\n"; 
+                }
+
+            f.close();
+
+		tabs.updateArray()[0].insertText(0, 0, fileContent);
+
+		syntaxHighlight(tabs.updateArray()[0], "module", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "import", "violet");
+		//syntaxHighlight(tabs.updateArray()[0], "private", "violet");
+		//syntaxHighlight(tabs.updateArray()[0], "public", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "void", "violet");
+		
+		/*
+		string[] patternIndexes = tabs.updateArray()[0].findAll("module");
+		foreach (item; patternIndexes) {
+			float convItem = 1.01;
+			float endIndex = 1.07;
+			writeln(convItem);
+			writeln(endIndex.to!string);
+			
+			tabs.updateArray()[0].deleteText("1.01", endIndex.to!string); // 2.0 and 2.6
+			tabs.updateArray()[0].insertText("1.01", "module", "violet");
+		}
+		*/
+
+	}
+
+	// deletes the pattern then replaces it with the tagged version
+	// problem with floats going from 2.6 to 19.20 the decimal gets fucked at that point
+	// if i can get them to be precise to 2 decimal points it should be good, !!!possibly 3 decimal points!!!
+	public void syntaxHighlight(Text textWidget, string pattern, string tags) {
+		string[] patternIndexes = textWidget.findAll(pattern);
+		writeln(patternIndexes);
+		foreach (item; patternIndexes) {
+			float startIndex;
+			float stopIndex;
+			if (item.find(".").length == 2) {
+				if (item.find(".") == ".0") {
+					writeln("inner if");
+					startIndex = item.to!float;
+					stopIndex = startIndex + pattern.length / 100.0;
+				} else {
+					writeln("inner else");
+					writeln(item);
+					string[] tclGarbage = item.split('.');
+					writeln(tclGarbage);
+					float lineIndex = tclGarbage[0].to!float;
+					writeln(lineIndex);
+					float charIndex = tclGarbage[1].to!float / 100.0;
+					writeln(charIndex);
+					float properIndex = lineIndex + charIndex;
+					startIndex = properIndex; // from here make it 68.09 instead of 68.9
+					writeln(startIndex);
+					stopIndex = properIndex + pattern.length / 100.0;
+					writeln(stopIndex);
+				}
+			} else {
+				writeln("outer else");
+				startIndex = item.to!float;
+				stopIndex = startIndex + pattern.length / 100.0;
+			}
+			writeln(item);
+			writeln(startIndex.to!string);
+			writeln(stopIndex.to!string);
+			textWidget.deleteText(item, stopIndex.to!string); // 2.0 and 2.6
+			textWidget.insertText(item, pattern, tags);
+		}
 	}
 
     // quits the application.
