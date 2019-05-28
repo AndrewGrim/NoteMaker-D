@@ -4,7 +4,7 @@
 		"Andrew Grim"
 	],
 	"dependencies": {
-		"tkd": "~>1.1.10"
+		"tkd": "~>1.1.99"
     },
     "configurations": [
         {
