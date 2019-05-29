@@ -24,7 +24,8 @@ class Application : TkdApplication {
 		this.root = mainWindow()
             .setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
             .setGeometry(0, 0, 600, 50)
-            .setMinSize(700, 800);
+            .setMinSize(700, 800)
+			.setFullscreen(true);
 
         // makes the code in "gui.d" usable in "main.d"
         gui = new Gui(root);
@@ -121,11 +122,20 @@ class Application : TkdApplication {
 			.configTag("yellow", "-foreground yellow")
 			.configTag("green", "-foreground greed")
 			.configTag("blue", "-foreground blue")
+			.configTag("teal", "-foreground teal")
 			.configTag("indigo", "-foreground indigo")
 			.configTag("violet", "-foreground violet")
+			.configTag("black", "-foreground black")
+			.configTag("gray", "-foreground gray")
 			.configTag("white", "-foreground white");
 
-		string fileToOpen = "C:/Users/Grim/Desktop/Dropbox/GitHub/PasswordGenerator-D/source/main.d";
+		string fileToOpen;
+		
+		version (Windows) {
+			fileToOpen = "C:/Users/Grim/Desktop/Dropbox/GitHub/PasswordGenerator-D/source/main.d";
+		} else {
+			fileToOpen = "/home/grim/Dropbox/GitHub/PasswordGenerator-D/source/main.d";
+		}
 		
 		auto f = File(fileToOpen, "r");
 
@@ -140,24 +150,76 @@ class Application : TkdApplication {
 
 		tabs.updateArray()[0].insertText(0, 0, fileContent);
 
+		// maybe change to regular expression to avoid duplicates like "[" and "[]"
 		syntaxHighlight(tabs.updateArray()[0], "module", "violet");
 		syntaxHighlight(tabs.updateArray()[0], "import", "violet");
-		//syntaxHighlight(tabs.updateArray()[0], "private", "violet");
-		//syntaxHighlight(tabs.updateArray()[0], "public", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "private", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "public", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "true", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "false", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "override", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "protected", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "main", "teal");
+		syntaxHighlight(tabs.updateArray()[0], "new", "red");
+		syntaxHighlight(tabs.updateArray()[0], "if", "red");
+		syntaxHighlight(tabs.updateArray()[0], "else", "red");
+		syntaxHighlight(tabs.updateArray()[0], "class", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "string", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "int", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "float", "violet");
 		syntaxHighlight(tabs.updateArray()[0], "void", "violet");
-		
-		/*
-		string[] patternIndexes = tabs.updateArray()[0].findAll("module");
-		foreach (item; patternIndexes) {
-			float convItem = 1.01;
-			float endIndex = 1.07;
-			writeln(convItem);
-			writeln(endIndex.to!string);
-			
-			tabs.updateArray()[0].deleteText("1.01", endIndex.to!string); // 2.0 and 2.6
-			tabs.updateArray()[0].insertText("1.01", "module", "violet");
-		}
-		*/
+		syntaxHighlight(tabs.updateArray()[0], "auto", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "char", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "bool", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "this.", "teal");
+		syntaxHighlight(tabs.updateArray()[0], "Window", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "SpinBox", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "CheckButton", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "Entry", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "Button", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "Frame", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "(", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], ")", "yellow");
+		//syntaxHighlight(tabs.updateArray()[0], "[]", "red");
+		syntaxHighlight(tabs.updateArray()[0], "[", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "]", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "[]", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "()", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "~", "yellow");
+		//syntaxHighlight(tabs.updateArray()[0], "{", "red"); error, probably tcl special character
+		//syntaxHighlight(tabs.updateArray()[0], "}", "yellow");
+		//syntaxHighlight(tabs.updateArray()[0], '"', "indigo"); lots of problems
+		syntaxHighlight(tabs.updateArray()[0], ",", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "=", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], ".", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "&", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], ":", "yellow");
+		syntaxHighlight(tabs.updateArray()[0], "0", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "1", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "2", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "3", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "4", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "5", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "6", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "7", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "8", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "9", "orange");
+		syntaxHighlight(tabs.updateArray()[0], "else if", "red");
+		syntaxHighlight(tabs.updateArray()[0], "while", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "for", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "break", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "continue", "violet");
+		syntaxHighlight(tabs.updateArray()[0], "writeln", "teal");
+		syntaxHighlight(tabs.updateArray()[0], "length", "red");
+		syntaxHighlight(tabs.updateArray()[0], "mainWindow", "orange");
+		//syntaxHighlight(tabs.updateArray()[0], "//", "green"); dont work
+		//syntaxHighlight(tabs.updateArray()[0], "/", "green"); dont work
+		//syntaxHighlight(tabs.updateArray()[0], ";", "red"); error, probably tcl special character
+
+		// go over it again line by line and remove tags within comments and apply comment tags
+		// find "//" from that index till endline apply comment tag
+		writeln("lines: " ~ tabs.updateArray()[0].numberOfLines());
+		tabs.updateArray()[0].insertText(tabs.updateArray()[0].numberOfLines(), "it works!", "");
 
 	}
 
@@ -165,6 +227,25 @@ class Application : TkdApplication {
 	// problem with floats going from 2.6 to 19.20 the decimal gets fucked at that point
 	// if i can get them to be precise to 2 decimal points it should be good, !!!possibly 3 decimal points!!!
 	public void syntaxHighlight(Text textWidget, string pattern, string tags) {
+		string[] patternIndexes = textWidget.findAll(pattern);
+		writeln(patternIndexes);
+		foreach (item; patternIndexes) {
+			writeln(item);
+			string[] tclGarbage = item.split('.');
+			writeln(tclGarbage);
+			int lineIndex = tclGarbage[0].to!int;
+			writeln(lineIndex);
+			int charIndex = tclGarbage[1].to!int ;
+			writeln(charIndex);
+			string startIndex = lineIndex.to!string ~ "." ~ charIndex.to!string;
+			int endIndex = charIndex.to!int + pattern.length.to!int;
+			string stopIndex = lineIndex.to!string ~ "." ~ endIndex.to!string;
+					
+			writeln(item);
+			writeln(startIndex.to!string);
+			writeln(stopIndex.to!string);
+			textWidget.addTag(tags, item, stopIndex.to!string);
+		/*
 		string[] patternIndexes = textWidget.findAll(pattern);
 		writeln(patternIndexes);
 		foreach (item; patternIndexes) {
@@ -185,9 +266,14 @@ class Application : TkdApplication {
 					float charIndex = tclGarbage[1].to!float / 100.0;
 					writeln(charIndex);
 					float properIndex = lineIndex + charIndex;
-					startIndex = properIndex; // from here make it 68.09 instead of 68.9
+					if (pattern == "private") {
+						startIndex = item.to!float;
+						stopIndex = startIndex + pattern.length / 10.0;
+					} else {
+						startIndex = properIndex; // from here make it 68.09 instead of 68.9
+						stopIndex = properIndex + pattern.length / 100.0;
+					}
 					writeln(startIndex);
-					stopIndex = properIndex + pattern.length / 100.0;
 					writeln(stopIndex);
 				}
 			} else {
@@ -198,8 +284,10 @@ class Application : TkdApplication {
 			writeln(item);
 			writeln(startIndex.to!string);
 			writeln(stopIndex.to!string);
-			textWidget.deleteText(item, stopIndex.to!string); // 2.0 and 2.6
-			textWidget.insertText(item, pattern, tags);
+			textWidget.addTag(tags, item, stopIndex.to!string);
+			*/
+			//textWidget.deleteText(item, stopIndex.to!string); // 2.0 and 2.6
+			//textWidget.insertText(item, pattern, tags);
 		}
 	}
 
