@@ -10,54 +10,54 @@ import std.exception;
 // creating tabs etc.
 class Tabs {
 
-    //variables
-    Window root;
-    NoteBook noteBook;
+	//variables
+	Window root;
+	NoteBook noteBook;
 	Text[] textWidgetArray;
 	int[] lastClosedTab;
 
-    //constructor
-    this(Window root, NoteBook noteBook, Text[] textWidgetArray) {
-        this.root = root;
-        this.noteBook = noteBook;
+	//constructor
+	this(Window root, NoteBook noteBook, Text[] textWidgetArray) {
+		this.root = root;
+		this.noteBook = noteBook;
 		this.textWidgetArray = textWidgetArray;
-    }
+	}
 
 	// creates a new tab and adds it to the "noteBook"
-    public void createNewTab(CommandArgs args) {
-        
-        // the main frame that gets returned to be used by the "noteBook"
+	public void createNewTab(CommandArgs args) {
+		
+		// the main frame that gets returned to be used by the "noteBook"
 		auto frameMain = new Frame(root);
 
-            // the frame containing all the widgets
-            auto container = new Frame(frameMain)
-                .pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
+			// the frame containing all the widgets
+			auto container = new Frame(frameMain)
+				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 				Text textMain = textWidgetArray[0];
 
-                // creates the "textWidget"
-                auto textWidget = new Text(container)
-                    .setHeight(5)
-                    .setWidth(40)
+				// creates the "textWidget"
+				auto textWidget = new Text(container)
+					.setHeight(5)
+					.setWidth(40)
 					.setFont(textMain.getFont())
 					.setForegroundColor(textMain.getForegroundColor())
 					.setBackgroundColor(textMain.getBackgroundColor())
 					.setInsertColor(textMain.getInsertColor())
-                    .pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
+					.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 
-                // creates the vertical "yscrollWidget" for use with "textWidget"
-                auto yscrollWidget = new YScrollBar(container)
-                    .attachWidget(textWidget)
-                    .pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
+				// creates the vertical "yscrollWidget" for use with "textWidget"
+				auto yscrollWidget = new YScrollBar(container)
+					.attachWidget(textWidget)
+					.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
 				textWidget.attachYScrollBar(yscrollWidget);
 
-        noteBook.addTab("New File", frameMain);
+		noteBook.addTab("New File", frameMain);
 		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
 		textWidget.focus();
 
 		textWidgetArray ~= textWidget;
-    }
+	}
 
 	// updates the array to include all the currently existing Text widgets
 	public Text[] updateArray() {
