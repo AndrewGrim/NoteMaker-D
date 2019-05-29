@@ -229,27 +229,41 @@ class Application : TkdApplication {
 		int startIndex;
 		int stopIndex;
 		int patternNumber = 1;
-		// go through each line in the text and add extra tags for comments and others
+
 		for (int line = 1; line <= tabs.updateArray()[0].getNumberOfLines().split(".")[0].to!int; line++) {
 			// add check for comments where if they are withing "", they get ignored!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			// check for comment
 			if (tabs.updateArray()[0].getLine(line).countUntil("//") != -1 || tabs.updateArray()[0].getLine(line).countUntil("///") != -1) {
-				startIndex = tabs.updateArray()[0].getLine(line).countUntil("//");
-				tabs.updateArray()[0].removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
-				tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("//") + 2).countUntil("\"") == 0 ||
+					tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("//") + 2).countUntil("\"") == 1) {
+					writeln("closing comment should be ignored");
+				} else {
+					startIndex = tabs.updateArray()[0].getLine(line).countUntil("//");
+					tabs.updateArray()[0].removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+					tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+				}
 			}
 			// check for multiline comment
 			if (tabs.updateArray()[0].getLine(line).countUntil("/*") != -1) {
-				startIndex = tabs.updateArray()[0].getLine(line).countUntil("/*");
-				isMultiLineComment = true;
-				tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+				// comment in string literal
+				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("/*") + 2).countUntil("\"") == 0) {
+					writeln("comment should be ignored");
+				} else {
+					startIndex = tabs.updateArray()[0].getLine(line).countUntil("/*");
+					isMultiLineComment = true;
+					tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+				}
 			} else if (isMultiLineComment == true) { // if multiline comment then apply tag, hoping this will fix it
 				tabs.updateArray()[0].addTag("black", line.to!string ~ ".0", line.to!string ~ ".end");
 			}
 			// closes multiline comment
 			if (tabs.updateArray()[0].getLine(line).countUntil("*/") != -1) {
-				isMultiLineComment = false;
+				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("*/") + 2).countUntil("\"") == 0) {
+					writeln("closing comment should be ignored");
+				} else {
+					isMultiLineComment = false;
 				tabs.updateArray()[0].addTag("black", line.to!string ~ ".0", line.to!string ~ "." ~ (tabs.updateArray()[0].getLine(line).countUntil("*/") + 2).to!string);
+				}
 			}
 			// check for literal string
 			if (tabs.updateArray()[0].getLine(line).countUntil('"') != -1) {
