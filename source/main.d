@@ -5,7 +5,7 @@ import std.stdio;
 import std.conv;
 import std.string;    
 import std.algorithm;
-import preferences, inputoutput, gui, tabs; // source imports
+import preferences, inputoutput, gui, tabs, syntaxhighlighting; // source imports
 
 // NoteMaker application.
 class Application : TkdApplication {
@@ -16,6 +16,8 @@ class Application : TkdApplication {
 	Preferences pref;
 	InputOutput io;
 	Tabs tabs;
+	Syntax syntax;
+	NoteBook noteBook;
 
 	// initialize user interface
 	override public void initInterface() {
@@ -31,7 +33,7 @@ class Application : TkdApplication {
 		gui = new Gui(root);
 
 		// creates the noteBook and the default tab
-		auto noteBook = new NoteBook();
+		noteBook = new NoteBook();
 		auto mainPane = gui.createMainPane();
 
 		// shows the noteBook adds the default tab to it
@@ -43,6 +45,7 @@ class Application : TkdApplication {
 		io = new InputOutput(root, gui.textMain, noteBook);
 		tabs = new Tabs(root, noteBook, gui.textWidgetArray);
 		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, noteBook, gui.textWidgetArray);
+		syntax = new Syntax();
 
 		// create the menu bar at the top
 		auto menuBar = new MenuBar(root);
@@ -116,190 +119,7 @@ class Application : TkdApplication {
 
 	// !Testing! highlights the defined syntax
 	public void highlight(CommandArgs args) {
-		tabs.updateArray()[0]
-			.configTag("red", "-foreground red")
-			.configTag("orange", "-foreground orange")
-			.configTag("yellow", "-foreground yellow")
-			.configTag("green", "-foreground green")
-			.configTag("blue", "-foreground blue")
-			.configTag("teal", "-foreground teal")
-			.configTag("indigo", "-foreground indigo")
-			.configTag("violet", "-foreground violet")
-			.configTag("black", "-foreground black")
-			.configTag("gray", "-foreground gray")
-			.configTag("white", "-foreground white");
-
-		string fileToOpen;
-		
-		version (Windows) {
-			fileToOpen = "C:/Users/Grim/Desktop/Dropbox/GitHub/NoteMaker-D/source/main.d";
-		} else {
-			fileToOpen = "/home/grim/Dropbox/GitHub/NoteMaker-D/source/main.d";
-		}
-		
-		auto f = File(fileToOpen, "r");
-
-			string fileContent;
-
-			while (!f.eof()) { 
-				string line = chomp(f.readln()); 
-				fileContent ~= line ~ "\n"; 
-				}
-
-			f.close();
-
-		tabs.updateArray()[0].insertText(0, 0, fileContent);
-
-		syntaxHighlight(tabs.updateArray()[0], "module", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "import", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "private", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "public", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "true", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "false", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "override", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "protected", "violet");
-		//syntaxHighlight(tabs.updateArray()[0], "main", "teal");
-		syntaxHighlight(tabs.updateArray()[0], "new ", "red");
-		syntaxHighlight(tabs.updateArray()[0], "if ", "red");
-		syntaxHighlight(tabs.updateArray()[0], "else ", "red");
-		syntaxHighlight(tabs.updateArray()[0], "class", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "string", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "int", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "float", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "void", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "auto", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "char", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "bool", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "this.", "teal");
-		syntaxHighlight(tabs.updateArray()[0], "Window", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "SpinBox", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "CheckButton", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "Entry", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "Button", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "Frame", "orange");
-		//syntaxHighlight(tabs.updateArray()[0], "(", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], ")", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "[", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "]", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "[]", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "()", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "~", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "{", "red"); error, probably tcl special character
-		//syntaxHighlight(tabs.updateArray()[0], "}", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "'", "green");
-		//syntaxHighlight(tabs.updateArray()[0], ",", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "=", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], ".", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "&", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "<", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], ">", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], ">=", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], ">=", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], "-", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "+", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "*", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "/", "yellow");
-		//syntaxHighlight(tabs.updateArray()[0], ":", "yellow");
-		syntaxHighlight(tabs.updateArray()[0], "0", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "1", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "2", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "3", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "4", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "5", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "6", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "7", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "8", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "9", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "else if ", "red");
-		syntaxHighlight(tabs.updateArray()[0], "while ", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "for ", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "break", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "continue", "violet");
-		syntaxHighlight(tabs.updateArray()[0], "writeln", "teal");
-		syntaxHighlight(tabs.updateArray()[0], ".length", "red");
-		syntaxHighlight(tabs.updateArray()[0], "mainWindow", "orange");
-		syntaxHighlight(tabs.updateArray()[0], "to!", "red"); 
-		syntaxHighlight(tabs.updateArray()[0], "TkdApplication", "orange"); 
-		syntaxHighlight(tabs.updateArray()[0], "Application", "orange"); 
-		//syntaxHighlight(tabs.updateArray()[0], ";", "red"); error, probably tcl special character
-
-		writeln("lines: " ~ tabs.updateArray()[0].getNumberOfLines());
-		bool isMultiLineComment = false;
-		bool withinString = false;
-		int startIndex;
-		int stopIndex;
-		int patternNumber = 1;
-
-		for (int line = 1; line <= tabs.updateArray()[0].getNumberOfLines().split(".")[0].to!int; line++) {
-			// add check for comments where if they are withing "", they get ignored!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// check for comment
-			if (tabs.updateArray()[0].getLine(line).countUntil("//") != -1 || tabs.updateArray()[0].getLine(line).countUntil("///") != -1) {
-				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("//") + 2).countUntil("\"") == 0 ||
-					tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("//") + 2).countUntil("\"") == 1) {
-					writeln("closing comment should be ignored");
-				} else {
-					startIndex = tabs.updateArray()[0].getLine(line).countUntil("//");
-					tabs.updateArray()[0].removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
-					tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
-				}
-			}
-			// check for multiline comment
-			if (tabs.updateArray()[0].getLine(line).countUntil("/*") != -1) {
-				// comment in string literal
-				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("/*") + 2).countUntil("\"") == 0) {
-					writeln("comment should be ignored");
-				} else {
-					startIndex = tabs.updateArray()[0].getLine(line).countUntil("/*");
-					isMultiLineComment = true;
-					tabs.updateArray()[0].addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
-				}
-			} else if (isMultiLineComment == true) { // if multiline comment then apply tag, hoping this will fix it
-				tabs.updateArray()[0].addTag("black", line.to!string ~ ".0", line.to!string ~ ".end");
-			}
-			// closes multiline comment
-			if (tabs.updateArray()[0].getLine(line).countUntil("*/") != -1) {
-				if (tabs.updateArray()[0].getPartialLine(line, tabs.updateArray()[0].getLine(line).countUntil("*/") + 2).countUntil("\"") == 0) {
-					writeln("closing comment should be ignored");
-				} else {
-					isMultiLineComment = false;
-				tabs.updateArray()[0].addTag("black", line.to!string ~ ".0", line.to!string ~ "." ~ (tabs.updateArray()[0].getLine(line).countUntil("*/") + 2).to!string);
-				}
-			}
-			// check for literal string
-			if (tabs.updateArray()[0].getLine(line).countUntil('"') != -1) {
-				startIndex = tabs.updateArray()[0].getLine(line).countUntil('"');
-				int fromStartToClose = (tabs.updateArray()[0].getPartialLine(line, startIndex + 1).countUntil('"')) + 2;
-				stopIndex = startIndex + fromStartToClose;
-				int numberOfLiterals = tabs.updateArray()[0].getLine(line).count("\"") / 2;
-				tabs.updateArray()[0].removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-				tabs.updateArray()[0].addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-				for (int i = 1; i < numberOfLiterals; i++) {
-					startIndex = tabs.updateArray()[0].getPartialLine(line, stopIndex).countUntil('"') + stopIndex;
-					fromStartToClose = tabs.updateArray()[0].getPartialLine(line, startIndex + 1).countUntil('"') + 2;
-					stopIndex = startIndex + fromStartToClose;
-					tabs.updateArray()[0].removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-					tabs.updateArray()[0].addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-				}
-			}
-		}
-	}
-
-	public void syntaxHighlight(Text textWidget, string pattern, string tags) {
-		string[] patternIndexes = textWidget.findAll(pattern);
-		int patternNumber = 1;
-		foreach (item; patternIndexes) {
-			string[] tclGarbage = item.split('.');
-			int lineIndex = tclGarbage[0].to!int;
-			int charIndex = tclGarbage[1].to!int ;
-			string startIndex = lineIndex.to!string ~ "." ~ charIndex.to!string;
-			int endIndex = charIndex.to!int + pattern.length.to!int;
-			if (pattern == "'" && patternNumber % 2 == 1) {
-				endIndex = charIndex.to!int + (pattern.length + 1).to!int;
-			}
-			patternNumber++;
-			string stopIndex = lineIndex.to!string ~ "." ~ endIndex.to!string;
-			textWidget.addTag(tags, item, stopIndex.to!string);
-		}
+		syntax.highlight(args, noteBook, tabs.updateArray());
 	}
 
 	// quits the application.
