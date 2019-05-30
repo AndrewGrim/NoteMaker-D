@@ -43,6 +43,7 @@ class Preferences {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
+			// if fullscreen the grab the size of the screen and put the preferences window at about the center!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			preferencesWindow.setWindowPositon(root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
 			preferencesWindow.focus();            
 

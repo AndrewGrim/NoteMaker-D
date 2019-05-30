@@ -1,0 +1,13 @@
+return
+module 
+import 
+private 
+public 
+override 
+protected 
+new 
+this.
+this
+writeln
+.length
+to!

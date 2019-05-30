@@ -1,5 +1,5 @@
-Arial 11 bold
+Arial 12
 #ffffff
-#555555
+#000000
 #ffffff
-1
+0.89213

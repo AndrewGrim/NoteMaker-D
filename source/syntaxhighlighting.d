@@ -5,84 +5,49 @@ import std.stdio;
 import std.conv;
 import std.string;    
 import std.algorithm;
+import std.path;
+import std.file;
 
 class Syntax {
 
 	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {
 		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
+
 		configureTags(textWidget);
+		string[string] tags = [ "keywords.txt" : "keyword", "conditionals.txt" : "conditional", "loops.txt" : "loop",
+          						"types.txt" : "type", "symbols.txt"  : "symbol", "numbers.txt"  : "number"];
+	
+		foreach (syntaxFile; dirEntries("syntax", SpanMode.shallow, false)) {
+			string filePath = getcwd() ~ "/" ~ syntaxFile;
+			string[] fileContent;
 
-		// load from file and do a for loop for all the options specified, way too many lines!!!!!!!!!!!!!!!!!!!!!!!!
-		searchHighlight(textWidget, "module ", "violet");
-		searchHighlight(textWidget, "import ", "violet");
-		searchHighlight(textWidget, "private ", "violet");
-		searchHighlight(textWidget, "public ", "violet");
-		searchHighlight(textWidget, " true", "violet");
-		searchHighlight(textWidget, " false", "violet");
-		searchHighlight(textWidget, "override ", "violet");
-		searchHighlight(textWidget, "protected ", "violet");
-		searchHighlight(textWidget, "new ", "red");
-		searchHighlight(textWidget, "if ", "red");
-		searchHighlight(textWidget, "else ", "red");
-		searchHighlight(textWidget, "class ", "yellow");
-		searchHighlight(textWidget, "string ", "violet");
-		searchHighlight(textWidget, "string[", "violet"); // use something else to get it working
-		searchHighlight(textWidget, "int ", "violet");
-		searchHighlight(textWidget, "float ", "violet");
-		searchHighlight(textWidget, "void ", "violet");
-		searchHighlight(textWidget, "auto ", "violet");
-		searchHighlight(textWidget, "char ", "violet");
-		searchHighlight(textWidget, "bool ", "violet");
-		searchHighlight(textWidget, "this.", "teal");
-		searchHighlight(textWidget, "~", "yellow");
-		searchHighlight(textWidget, "=", "yellow");
-		searchHighlight(textWidget, "&", "yellow");
-		searchHighlight(textWidget, "<", "yellow");
-		searchHighlight(textWidget, ">", "yellow");
-		searchHighlight(textWidget, ">=", "yellow");
-		searchHighlight(textWidget, "<=", "yellow");
-		searchHighlight(textWidget, "(", "yellow");
-		searchHighlight(textWidget, ")", "yellow");
-		searchHighlight(textWidget, "+", "yellow");
-		searchHighlight(textWidget, "*", "yellow");
-		searchHighlight(textWidget, "/", "yellow");
-		searchHighlight(textWidget, "0", "orange");
-		searchHighlight(textWidget, "1", "orange");
-		searchHighlight(textWidget, "2", "orange");
-		searchHighlight(textWidget, "3", "orange");
-		searchHighlight(textWidget, "4", "orange");
-		searchHighlight(textWidget, "5", "orange");
-		searchHighlight(textWidget, "6", "orange");
-		searchHighlight(textWidget, "7", "orange");
-		searchHighlight(textWidget, "8", "orange");
-		searchHighlight(textWidget, "9", "orange");
-		searchHighlight(textWidget, "else if ", "red");
-		searchHighlight(textWidget, "while ", "violet");
-		searchHighlight(textWidget, "for ", "violet");
-		searchHighlight(textWidget, "break", "violet");
-		searchHighlight(textWidget, "continue", "violet");
-		searchHighlight(textWidget, "return", "violet");
-		searchHighlight(textWidget, "writeln", "teal");
-		searchHighlight(textWidget, ".length", "red");
-		searchHighlight(textWidget, "to!", "red"); 
+			auto f = File(filePath, "r");
+			while (!f.eof()) {
+				string line = chomp(f.readln());
+				fileContent ~= line;
+			}
 
+			foreach (item; fileContent) {
+				searchHighlight(textWidget, item, tags[filePath.baseName]);
+			}
+		}
+		
+			
 		lineByLineHighlight(textWidget);
 	}
 
 	public void configureTags(Text textWidget) {
 		textWidget
-			.configTag("red", "-foreground red")
-			.configTag("orange", "-foreground orange")
-			.configTag("yellow", "-foreground yellow")
-			.configTag("green", "-foreground green")
-			.configTag("blue", "-foreground blue")
-			.configTag("teal", "-foreground teal")
-			.configTag("indigo", "-foreground indigo")
-			.configTag("violet", "-foreground violet")
-			.configTag("black", "-foreground black")
-			.configTag("gray", "-foreground gray")
-			.configTag("white", "-foreground white");
+			.configTag("conditional", "-foreground red")
+			.configTag("loop", "-foreground red")
+			.configTag("type", "-foreground violet")
+			.configTag("keyword", "-foreground violet")
+			.configTag("symbol", "-foreground yellow")
+			.configTag("number", "-foreground orange")
+			.configTag("comment", "-foreground green")
+			.configTag("char", "-foreground teal")
+			.configTag("string", "-foreground teal");
 	}
 
 	public void searchHighlight(Text textWidget, string pattern, string tags) {
@@ -120,7 +85,7 @@ class Syntax {
 				} else {
 					startIndex = (textWidget.getLine(line).countUntil("//")).to!int;
 					textWidget.removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
-					textWidget.addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+					textWidget.addTag("comment", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
 				}
 			}
 			// check for multiline comment
@@ -131,10 +96,10 @@ class Syntax {
 				} else {
 					startIndex = (textWidget.getLine(line).countUntil("/*")).to!int;
 					isMultiLineComment = true;
-					textWidget.addTag("black", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
+					textWidget.addTag("comment", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ ".end");
 				}
-			} else if (isMultiLineComment == true) { // if multiline comment then apply tag, hoping this will fix it
-				textWidget.addTag("black", line.to!string ~ ".0", line.to!string ~ ".end");
+			} else if (isMultiLineComment == true) {
+				textWidget.addTag("comment", line.to!string ~ ".0", line.to!string ~ ".end");
 			}
 			// closes multiline comment
 			if (textWidget.getLine(line).countUntil("*/") != -1) {
@@ -142,7 +107,7 @@ class Syntax {
 					writeln("closing comment should be ignored");
 				} else {
 					isMultiLineComment = false;
-				textWidget.addTag("black", line.to!string ~ ".0", line.to!string ~ "." ~ (textWidget.getLine(line).countUntil("*/") + 2).to!string);
+				textWidget.addTag("comment", line.to!string ~ ".0", line.to!string ~ "." ~ (textWidget.getLine(line).countUntil("*/") + 2).to!string);
 				}
 			}
 			// check for literal string
@@ -152,28 +117,26 @@ class Syntax {
 				stopIndex = startIndex + fromStartToClose;
 				int numberOfLiterals = (textWidget.getLine(line).count("\"")).to!int / 2;
 				textWidget.removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-				textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+				textWidget.addTag("string", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 				if (textWidget.getLine(line).countUntil("\"\\\"\"") != -1) {
-					// add conditional to run this even if the there is only one literal string in the line
 					// corner case where the last " in "\"" would not get marked green, because they're coded to work in pairs 
 					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
 					fromStartToClose = 1;
 					stopIndex = startIndex + fromStartToClose;
-					textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+					textWidget.addTag("string", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 				}
 				for (int i = 1; i < numberOfLiterals; i++) {
 					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
 					fromStartToClose = textWidget.getPartialLine(line, startIndex + 1).countUntil('"').to!int + 2;
 					stopIndex = startIndex + fromStartToClose;
 					textWidget.removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-					textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+					textWidget.addTag("string", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 					if (textWidget.getLine(line).countUntil("\"\\\"\"") != -1) {
-						// add conditional to run this even if the there is only one literal string in the line
 						// corner case where the last " in "\"" would not get marked green, because they're coded to work in pairs 
 						startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
 						fromStartToClose = 1;
 						stopIndex = startIndex + fromStartToClose;
-						textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+						textWidget.addTag("string", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 					}
 				}
 			}
@@ -184,13 +147,13 @@ class Syntax {
 				stopIndex = startIndex + fromStartToClose;
 				int numberOfLiterals = (textWidget.getLine(line).count("'")).to!int / 2;
 				textWidget.removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-				textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+				textWidget.addTag("char", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 				for (int i = 1; i < numberOfLiterals; i++) {
 					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil("'").to!int + stopIndex;
 					fromStartToClose = textWidget.getPartialLine(line, startIndex + 1).countUntil("'").to!int + 2;
 					stopIndex = startIndex + fromStartToClose;
 					textWidget.removeTag("violet", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
-					textWidget.addTag("green", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+					textWidget.addTag("char", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
 				}
 			}
 		}

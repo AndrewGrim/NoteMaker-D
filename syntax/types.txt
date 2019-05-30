@@ -1,0 +1,32 @@
+auto 
+string 
+bool 
+ true
+ false
+void 
+byte 
+ubyte 
+short 
+ushort 
+uint 
+long 
+ulong 
+cent 
+ucent 
+int 
+float 
+double 
+real 
+ifloat 
+idouble 
+ireal 
+cfloat 
+cdouble 
+creal 
+char 
+wchar 
+dchar 
+enum 
+struct 
+union 
+class 
