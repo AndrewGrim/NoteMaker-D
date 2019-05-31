@@ -3,3 +3,5 @@ for
 foreach 
 break
 continue
+do 
+goto 

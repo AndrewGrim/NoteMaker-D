@@ -1,5 +1,6 @@
 auto 
 string 
+string\[\] 
 bool 
  true
  false

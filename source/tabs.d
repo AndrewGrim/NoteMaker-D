@@ -37,8 +37,6 @@ class Tabs {
 
 				// creates the "textWidget"
 				auto textWidget = new Text(container)
-					.setHeight(5)
-					.setWidth(40)
 					.setFont(textMain.getFont())
 					.setForegroundColor(textMain.getForegroundColor())
 					.setBackgroundColor(textMain.getBackgroundColor())

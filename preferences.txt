@@ -1,5 +1,5 @@
 Arial 12
-#ffffff
+#fff
 #000000
-#ffffff
-0.89213
+#00ff00
+0.795173

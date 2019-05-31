@@ -5,9 +5,12 @@ private
 public 
 override 
 protected 
+static 
 new 
 this.
 this
 writeln
 .length
 to!
+ in 
+eof
