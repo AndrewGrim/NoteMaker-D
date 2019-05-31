@@ -3,6 +3,7 @@ module preferences;
 import tkd.tkdapplication;      
 import std.stdio;         
 import std.file;
+import std.conv;
 
 // preferences window
 class Preferences {
@@ -43,13 +44,12 @@ class Preferences {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
-			// if fullscreen the grab the size of the screen and put the preferences window at about the center!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			preferencesWindow.setWindowPositon(root.getXPos() + root.getXPos() / 2 - 50, root.getWidth() / 2 + 50);
+			preferencesWindow.setWindowPositon(root.getWidth() / 2 + root.getXPos() - 100, root.getHeight() / 2 + root.getYPos() - 100);
 			preferencesWindow.focus();            
 
 		// the frame that holds all the widgets within the window
 		this.preferencesFrame = new Frame(preferencesWindow)
-			.pack(10, 10);
+			.pack(40, 0);
 
 		// creates the button for changing the font
 		this.changeFont = new Button(preferencesFrame, "Change Font")
