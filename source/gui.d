@@ -20,6 +20,7 @@ class Gui {
 	string font, foreground, background, insert;
 	string opacity = "1.0";
 	Text[] textWidgetArray;
+	string appDir;
 
 	// constructor
 	this(Window root) {
@@ -70,8 +71,7 @@ class Gui {
 
 				// creates the "textMain" widget and sets the options if the "preferences.txt" file exists
 				this.textMain = new Text(container)
-					.setHeight(5)
-					.setWidth(40)
+					.focus()
 					.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 					// tries to read in the values from file
 					try {
@@ -107,6 +107,8 @@ class Gui {
 					} catch (ConvException convError) {
 						writeln("Couldn't convert opacity string to float!");
 					}
+
+				appDir = getcwd();
 
 		return frameMain;
 	}

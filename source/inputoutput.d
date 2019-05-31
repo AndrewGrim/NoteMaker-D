@@ -5,6 +5,7 @@ import std.stdio;
 import std.file;
 import std.string;
 import std.path;
+import std.exception;
 
 // saving and opening methods
 class InputOutput {
@@ -58,6 +59,12 @@ class InputOutput {
 
 			textWidgetArray[noteBook.getCurrentTabId()].clear();
 			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent);
+			try {
+				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
+			} catch (ErrnoException error) {
+				writeln("Couldn't read tabWidth from preferences file! @inputoutput");
+			}
+			
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 
 			root.setTitle("File opened: " ~ fileToOpen);

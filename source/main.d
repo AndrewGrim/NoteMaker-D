@@ -25,9 +25,7 @@ class Application : TkdApplication {
 		// sets up root
 		this.root = mainWindow()
 			.setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
-			.setGeometry(0, 0, 600, 50)
-			.setMinSize(700, 800)
-			.setFullscreen(true);
+			.setGeometry(1200, 800, 250, 50);
 
 		// makes the code in "gui.d" usable in "main.d"
 		gui = new Gui(root);
@@ -43,9 +41,9 @@ class Application : TkdApplication {
 
 		// makes the code in other files usable in "main.d"
 		io = new InputOutput(root, gui.textMain, noteBook);
-		tabs = new Tabs(root, noteBook, gui.textWidgetArray);
 		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, noteBook, gui.textWidgetArray);
-		syntax = new Syntax();
+		tabs = new Tabs(root, noteBook, gui.textWidgetArray);
+		syntax = new Syntax(gui.appDir);
 
 		// create the menu bar at the top
 		auto menuBar = new MenuBar(root);
@@ -64,13 +62,15 @@ class Application : TkdApplication {
 			.addSeparator()
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
-			.addEntry("Syntax Highlight", &this.highlight, "Ctrl+L")
-			.addEntry("Quit", &this.exitApplication, "Ctrl+Q");
+			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L")
+			.addSeparator()
+			.addEntry("Quit", &exitApplication, "Ctrl+Q");
 
 		// runs every 3 seconds: resets the title 
 		this.root.setIdleCommand(delegate(CommandArgs args) {
 			root.setTitle("Note Maker");
 			root.setOpacity(gui.opacitySlider.getValue());
+			//automaticHighlight(args); // prob doesnt work because the dialog temporarily change the cwd or something, nah its something else :(
 			root.setIdleCommand(args.callback, 3000);
 		});
 
@@ -87,8 +87,9 @@ class Application : TkdApplication {
 		root.bind("<Control-KeyPress-2>", &tabs.previousTab); // Previous Tab
 		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
+		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
+		// help control-h, as either a message or a help file
 		root.bind("<Control-q>", &this.exitApplication); // Quit
-		root.bind("<Control-l>", &this.highlight);
 		
 		// checks if the preferences file exists if false creates one and tells you about it
 		if (!gui.preferencesFileExists) {
@@ -101,15 +102,18 @@ class Application : TkdApplication {
 	// opens a file according to the dialog
 	public void openFile(CommandArgs args) {
 		io.openOpenFileDialog(args, tabs.updateArray());
+		automaticHighlight(args);
 	}
 
 	public void saveFile(CommandArgs args) {
 		io.saveFile(args, tabs.updateArray());
+		automaticHighlight(args);
 	}
 
 	// saves a file according to the dialog
 	public void saveFileAs(CommandArgs args) {
 		io.openSaveFileDialog(args, tabs.updateArray());
+		automaticHighlight(args);
 	}
 
 	// opens the preferences window
@@ -117,9 +121,14 @@ class Application : TkdApplication {
 		pref.openPreferencesWindow(args, tabs.updateArray());
 	}
 
-	// !Testing! highlights the defined syntax
-	public void highlight(CommandArgs args) {
+	// automatically highlights the defined syntax
+	public void automaticHighlight(CommandArgs args) {
 		syntax.highlight(args, noteBook, tabs.updateArray());
+	}
+
+	// manually highlights the defined syntax bypassing the supported extensions check, results will vary
+	public void manualHighlight(CommandArgs args) {
+		syntax.highlight(args, noteBook, tabs.updateArray(), true);
 	}
 
 	// quits the application.
