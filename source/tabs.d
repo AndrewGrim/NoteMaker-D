@@ -55,6 +55,7 @@ class Tabs {
 		textWidget.focus();
 
 		textWidgetArray ~= textWidget;
+		root.generateEvent("<<TextWidgetCreated>>");
 	}
 
 	// updates the array to include all the currently existing Text widgets

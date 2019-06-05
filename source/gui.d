@@ -93,6 +93,7 @@ class Gui {
 					.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
 				this.textMain.attachYScrollBar(yscroll);
+				root.generateEvent("<<TextWidgetCreated>>");
 
 				// creates the scale "opacitySlider" for changing the opacity/alpha setting
 				this.opacitySlider = new Scale()

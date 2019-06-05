@@ -5,7 +5,7 @@ import std.stdio;
 import std.conv;
 import std.string;    
 import std.algorithm;
-import preferences, inputoutput, gui, tabs, syntaxhighlighting; // source imports
+import preferences, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
 
 // NoteMaker application.
 class Application : TkdApplication {
@@ -18,6 +18,7 @@ class Application : TkdApplication {
 	Tabs tabs;
 	Syntax syntax;
 	NoteBook noteBook;
+	bool firstTextWidget = true;
 
 	// initialize user interface
 	override public void initInterface() {
@@ -27,12 +28,16 @@ class Application : TkdApplication {
 			.setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
 			.setGeometry(1200, 800, 250, 50);
 
+		root.bind("<<TextWidgetCreated>>", &addIndenationBindings);
+
 		// makes the code in "gui.d" usable in "main.d"
 		gui = new Gui(root);
 
 		// creates the noteBook and the default tab
 		noteBook = new NoteBook();
 		auto mainPane = gui.createMainPane();
+
+		firstTextWidget = false;
 
 		// shows the noteBook adds the default tab to it
 		noteBook
@@ -70,7 +75,6 @@ class Application : TkdApplication {
 		this.root.setIdleCommand(delegate(CommandArgs args) {
 			root.setTitle("Note Maker");
 			root.setOpacity(gui.opacitySlider.getValue());
-			//automaticHighlight(args); // prob doesnt work because the dialog temporarily change the cwd or something, nah its something else :(
 			root.setIdleCommand(args.callback, 3000);
 		});
 
@@ -88,9 +92,12 @@ class Application : TkdApplication {
 		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
-		// help control-h, as either a message or a help file
-		root.bind("<Control-q>", &this.exitApplication); // Quit
-		
+		// help control-h, as either a message or a help file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		root.bind("<Control-q>", &exitApplication); // Quit
+
+		// virtual event functions
+		root.bind("<<Modified>>", &saveOnModified);
+
 		// checks if the preferences file exists if false creates one and tells you about it
 		if (!gui.preferencesFileExists) {
 			auto dialog = new MessageDialog(this.root, "Preferences File")
@@ -99,12 +106,35 @@ class Application : TkdApplication {
 		}
 	}
 
+	// adds the indentation bindings to all the text widgets so that they can be actually used
+	public void addIndenationBindings(CommandArgs args) {
+		gui.textMain.bind("<Control-`>", &indent);
+		gui.textMain.bind("<Shift-Tab>", &unindent);
+		if (!firstTextWidget) {
+			foreach (widget; tabs.updateArray()) {
+				widget.bind("<Control-`>", &indent);
+				widget.bind("<Shift-Tab>", &unindent);
+			}
+		}
+	}
+
+	// indents the text, works with both single lines and selection
+	public void indent(CommandArgs args) {
+		indentation.Indentation.indent(noteBook, tabs.updateArray());
+	}
+
+	// unindents the text, works with both single lines and selection
+	public void unindent(CommandArgs args) {
+		indentation.Indentation.unindent(noteBook, tabs.updateArray());
+	}
+
 	// opens a file according to the dialog
 	public void openFile(CommandArgs args) {
 		io.openOpenFileDialog(args, tabs.updateArray());
 		automaticHighlight(args);
 	}
 
+	// saves the file sans dialog using the path from opening or saving the file previously
 	public void saveFile(CommandArgs args) {
 		io.saveFile(args, tabs.updateArray());
 		automaticHighlight(args);
@@ -114,6 +144,22 @@ class Application : TkdApplication {
 	public void saveFileAs(CommandArgs args) {
 		io.openSaveFileDialog(args, tabs.updateArray());
 		automaticHighlight(args);
+	}
+
+	// saves the file every time the text widget's contents are modified
+	public void saveOnModified(CommandArgs args) {
+		// put code in IO
+		//change to proper syntax and add option to save as you go??
+		// maybe create a custom switch that uses the scale widget as base??? or just checkbox or radio
+		/*
+		if (tabs.updateArray()[0].getModified()) { 
+			auto f = File("c:/users/grim/desktop/testingModified.txt", "w");
+			f.write(tabs.updateArray()[0].getText());
+			f.close();
+
+			tabs.updateArray()[0].setModified(false);
+		}
+		*/
 	}
 
 	// opens the preferences window

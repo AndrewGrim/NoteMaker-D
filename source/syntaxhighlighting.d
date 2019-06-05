@@ -36,7 +36,6 @@ class Syntax {
 		
 			foreach (syntaxFile; dirEntries("syntax", SpanMode.shallow, false)) {
 				string filePath = appDir ~ "/" ~ syntaxFile;
-				writeln("File path: " ~ filePath);
 				string[] fileContent;
 
 				auto f = File(filePath, "r");
@@ -201,4 +200,3 @@ class Syntax {
 		}
 	}
 }
-
