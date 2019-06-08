@@ -41,6 +41,8 @@ class Tabs {
 					.setForegroundColor(textMain.getForegroundColor())
 					.setBackgroundColor(textMain.getBackgroundColor())
 					.setInsertColor(textMain.getInsertColor())
+					.setSelectionForegroundColor(textMain.getSelectionForegroundColor())
+					.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor())
 					.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 
 				// creates the vertical "yscrollWidget" for use with "textWidget"

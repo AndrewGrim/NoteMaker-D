@@ -21,6 +21,8 @@ class Preferences {
 	Button changeInsertColor;
 	Button savePreferences;
 	Button cancelPreferences;
+	Button changeSelectionForegroundColor;
+	Button changeSelectionBackgroundColor;
 	NoteBook noteBook;
 	Text[] textWidgetArray;
 
@@ -44,7 +46,7 @@ class Preferences {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
-			preferencesWindow.setWindowPositon(root.getWidth() / 2 + root.getXPos() - 100, root.getHeight() / 2 + root.getYPos() - 100);
+			preferencesWindow.setWindowPositon(root.getWidth() / 2 + root.getXPos() - 120, root.getHeight() / 2 + root.getYPos() - 140);
 			preferencesWindow.focus();            
 
 		// the frame that holds all the widgets within the window
@@ -69,6 +71,16 @@ class Preferences {
 		// creates the button for changing the insert color
 		this.changeInsertColor = new Button(preferencesFrame, "Change Insert Color")
 			.setCommand(&openInsertColorDialog)
+			.pack(0, 0, GeometrySide.top, GeometryFill.x);
+
+		// creates the button for changing the selection foreground color
+		this.changeSelectionForegroundColor = new Button(preferencesFrame, "Change Selection Foreground Color")
+			.setCommand(&openSelectionForegroundColorDialog)
+			.pack(0, 0, GeometrySide.top, GeometryFill.x);
+
+		// creates the button for changing the selection background color
+		this.changeSelectionBackgroundColor = new Button(preferencesFrame, "Change Selection Background Color")
+			.setCommand(&openSelectionBackgroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
 		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
@@ -134,6 +146,32 @@ class Preferences {
 		savePreferencesToFile(args);
 	}
 
+	// opens the color dialog allowing you to choose the selection foreground color
+	public void openSelectionForegroundColorDialog(CommandArgs args) {
+		auto dialog = new ColorDialog("Choose a color")
+			.setInitialColor(Color.white)
+			.show();
+
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setSelectionForegroundColor(dialog.getResult);
+		}
+
+		savePreferencesToFile(args);
+	}
+
+	// opens the color dialog allowing you to choose the selection background color
+	public void openSelectionBackgroundColorDialog(CommandArgs args) {
+		auto dialog = new ColorDialog("Choose a color")
+			.setInitialColor(Color.gray)
+			.show();
+
+		for (int index; index < textWidgetArray.length; index++) {
+			textWidgetArray[index].setSelectionBackgroundColor(dialog.getResult);
+		}
+
+		savePreferencesToFile(args);
+	}
+
 	// saves the current widget values to the "preferences.txt" file
 	public void savePreferencesToFile(CommandArgs args) {
 		auto f = File(preferencesFile, "w");
@@ -141,7 +179,9 @@ class Preferences {
 		f.write(textMain.getForegroundColor() ~ "\n");
 		f.write(textMain.getBackgroundColor() ~ "\n");
 		f.write(textMain.getInsertColor() ~ "\n");
-		f.write(opacitySlider.getValue());
+		f.write(opacitySlider.getValue().to!string ~ "\n");
+		f.write(textMain.getSelectionForegroundColor() ~ "\n");
+		f.write(textMain.getSelectionBackgroundColor());
 		f.close();  
 
 		for (int index; index < textWidgetArray.length; index++) {
@@ -149,6 +189,8 @@ class Preferences {
 			textWidgetArray[index].setForegroundColor(textMain.getForegroundColor());
 			textWidgetArray[index].setBackgroundColor(textMain.getBackgroundColor());
 			textWidgetArray[index].setInsertColor(textMain.getInsertColor());
+			textWidgetArray[index].setSelectionForegroundColor(textMain.getSelectionForegroundColor());
+			textWidgetArray[index].setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
 		}
 
 		writeln("Preferences saved!");

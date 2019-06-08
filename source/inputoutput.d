@@ -6,6 +6,7 @@ import std.file;
 import std.string;
 import std.path;
 import std.exception;
+import std.conv;
 
 // saving and opening methods
 class InputOutput {
@@ -58,18 +59,15 @@ class InputOutput {
 			f.close();
 
 			textWidgetArray[noteBook.getCurrentTabId()].clear();
-			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent);
-			try {
-				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
-			} catch (ErrnoException error) {
-				writeln("Couldn't read tabWidth from preferences file! @inputoutput");
-			}
+			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent, "tabWidth");
 			
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
-
 			root.setTitle("File opened: " ~ fileToOpen);
-
 			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
+
+			string numOfLines = textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines();
+			string[] linesConv = numOfLines.split(".");
+			textWidgetArray[noteBook.getCurrentTabId()].deleteText((linesConv[0].to!int - 2).to!string ~ ".0", "end");
 		}
 	}	
 
@@ -100,10 +98,10 @@ class InputOutput {
 			f.close();
 
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
-
 			root.setTitle("File saved: " ~ fileToSave);
-
 			tabNameFilePath[baseName(fileToSave)] = fileToSave;
+
+			textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
 		}
 	}
 
@@ -127,8 +125,9 @@ class InputOutput {
 				f.close();
 
 				noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
-
 				root.setTitle("File saved: " ~ fileToSave);
+
+				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
 			}
 		}
 	}

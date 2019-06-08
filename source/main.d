@@ -135,6 +135,7 @@ class Application : TkdApplication {
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
+	// opens the save dialog if there isnt a path associated with the file
 	public void saveFile(CommandArgs args) {
 		io.saveFile(args, tabs.updateArray());
 		automaticHighlight(args);

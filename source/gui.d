@@ -17,7 +17,7 @@ class Gui {
 	string preferencesFile;
 	bool preferencesFileExists;
 	string[] preferencesArray;
-	string font, foreground, background, insert;
+	string font, foreground, background, insert, selectionForeground, selectionBackground;
 	string opacity = "1.0";
 	Text[] textWidgetArray;
 	string appDir;
@@ -57,13 +57,15 @@ class Gui {
 					background = preferencesArray[2];
 					insert = preferencesArray[3];
 					opacity = preferencesArray[4];
+					selectionForeground = preferencesArray[5];
+					selectionBackground = preferencesArray[6];
 
 				} catch (ErrnoException error) {
 					// when the preferences files is not found it is created with default values
 					preferencesFileExists = false;
 
 					auto f = File(preferencesFile, "w");
-					f.write("Helvetica\n#000000\n#ffffff\n#000000\n1.0");
+					f.write("Helvetica\n#ffffff\n#000000\n#00ff00\n1.0\n#000000\n#b8baba");
 					f.close();
 
 					writeln("Failed to read preferences file! Preferences file created!");
@@ -79,7 +81,9 @@ class Gui {
 							.setFont(font)
 							.setForegroundColor(foreground)
 							.setBackgroundColor(background)
-							.setInsertColor(insert);
+							.setInsertColor(insert)
+							.setSelectionForegroundColor(selectionForeground)
+							.setSelectionBackgroundColor(selectionBackground);
 					} catch (ErrnoException error) {
 						writeln("Custom text widget options couldn't be set!");
 					}
