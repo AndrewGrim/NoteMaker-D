@@ -18,12 +18,21 @@ class InputOutput {
 	string fileToSave;
 	NoteBook noteBook;
 	string[string] tabNameFilePath;
+	bool openingFile;
 
 	// constructor
 	this(Window root, Text textMain, NoteBook noteBook) {
 		this.root = root;
 		this.textMain = textMain;
 		this.noteBook = noteBook;
+	}
+
+	public bool getOpeningFile() {
+		return openingFile;
+	}
+
+	public void setOpeningFile(bool state) {
+		openingFile = state;
 	}
 
 	// opens the openFile dialog allowing you to choose the file to load
@@ -68,6 +77,8 @@ class InputOutput {
 			string numOfLines = textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines();
 			string[] linesConv = numOfLines.split(".");
 			textWidgetArray[noteBook.getCurrentTabId()].deleteText((linesConv[0].to!int - 2).to!string ~ ".0", "end");
+
+			openingFile = true;
 		}
 	}	
 

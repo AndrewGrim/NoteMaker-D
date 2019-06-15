@@ -23,26 +23,30 @@ class Preferences {
 	Button cancelPreferences;
 	Button changeSelectionForegroundColor;
 	Button changeSelectionBackgroundColor;
-	NoteBook noteBook;
 	Text[] textWidgetArray;
+	Text[] textWidgetArraySide;
+	CheckButton setSaveOnModified;
+	bool saveOnModified;
+
 
 	// constructor
 	this(Window root, Text textMain, Scale opacitySlider, string preferencesFile,
-		 NoteBook noteBook, Text[] textWidgetArray) {
+		Text[] textWidgetArray, Text[] textWidgetArraySide, bool saveOnModified) {
 
 		this.root = root;
 		this.textMain = textMain;
 		this.opacitySlider = opacitySlider;
 		this.preferencesFile = preferencesFile;
-		this.noteBook = noteBook;
 		this.textWidgetArray = textWidgetArray;
+		this.textWidgetArraySide = textWidgetArraySide;
+		this.saveOnModified = saveOnModified;
 
 		// sets up the command for the scale widget
 		opacitySlider.setCommand(&this.changeOpacity);
 	}
 
 	// creates the preferences window and displays its contents
-	public void openPreferencesWindow(CommandArgs args, Text[] updateArray) {
+	public void openPreferencesWindow(CommandArgs args, Text[] updateArray, Text[] updateArraySide) {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
@@ -83,6 +87,19 @@ class Preferences {
 			.setCommand(&openSelectionBackgroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
+		this.setSaveOnModified = new CheckButton(preferencesFrame, "Set Save On Modified")
+			.setCommand(delegate(CommandArgs args) {
+				if (setSaveOnModified.isChecked()) {
+					saveOnModified = true;
+				} else {
+					saveOnModified = false;
+				}
+			})
+			.pack(0, 0, GeometrySide.top, GeometryFill.x);
+			if (saveOnModified) {
+				setSaveOnModified.check();
+			}
+
 		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
 			.setCommand(&savePreferencesToFile)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
@@ -92,15 +109,24 @@ class Preferences {
 		this.preferencesWindow.bind("<Return>", &this.pressButton); // Clicks Button
 
 		textWidgetArray = updateArray;
+		textWidgetArraySide = updateArraySide;
+	}
+
+	public bool getSaveOnModified() {
+		return saveOnModified;
 	}
 
 	// opens the font dialog allowing you to choose the options
 	public void openFontDialog(CommandArgs args) {
 		auto dialog = new FontDialog("Choose a font")
 			.setCommand(delegate(CommandArgs args){
-			for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setFont(args.dialog.font);
-			}
+				foreach (widget; textWidgetArray) {
+					widget.setFont(args.dialog.font);
+				}
+
+				foreach (widget; textWidgetArraySide) {
+					widget.setFont(args.dialog.font);
+				}
 			})
 			.show();
 
@@ -113,8 +139,12 @@ class Preferences {
 			.setInitialColor(Color.black)
 			.show();
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setForegroundColor(dialog.getResult);
+		foreach (widget; textWidgetArray) {
+			widget.setForegroundColor(dialog.getResult);
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setForegroundColor(dialog.getResult);
 		}
 
 		savePreferencesToFile(args);
@@ -126,8 +156,12 @@ class Preferences {
 			.setInitialColor(Color.white)
 			.show();
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setBackgroundColor(dialog.getResult);
+		foreach (widget; textWidgetArray) {
+			widget.setBackgroundColor(dialog.getResult);
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setBackgroundColor(dialog.getResult);
 		}
 
 		savePreferencesToFile(args);
@@ -139,8 +173,12 @@ class Preferences {
 			.setInitialColor(Color.black)
 			.show();
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setInsertColor(dialog.getResult);
+		foreach (widget; textWidgetArray) {
+			widget.setInsertColor(dialog.getResult);
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setInsertColor(dialog.getResult);
 		}
 
 		savePreferencesToFile(args);
@@ -152,8 +190,12 @@ class Preferences {
 			.setInitialColor(Color.white)
 			.show();
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setSelectionForegroundColor(dialog.getResult);
+		foreach (widget; textWidgetArray) {
+			widget.setSelectionForegroundColor(dialog.getResult);
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setSelectionForegroundColor(dialog.getResult);
 		}
 
 		savePreferencesToFile(args);
@@ -165,11 +207,37 @@ class Preferences {
 			.setInitialColor(Color.gray)
 			.show();
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setSelectionBackgroundColor(dialog.getResult);
+		foreach (widget; textWidgetArray) {
+			widget.setSelectionBackgroundColor(dialog.getResult);
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setSelectionBackgroundColor(dialog.getResult);
 		}
 
 		savePreferencesToFile(args);
+	}
+
+	// sets the text widget options to the ones chosen in preferences
+	// seems redundant!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	public void applyPreferencesToWidgets() {
+		foreach (widget; textWidgetArray) {
+			widget.setFont(textMain.getFont());
+			widget.setForegroundColor(textMain.getForegroundColor());
+			widget.setBackgroundColor(textMain.getBackgroundColor());
+			widget.setInsertColor(textMain.getInsertColor());
+			widget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
+			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
+		}
+
+		foreach (widget; textWidgetArraySide) {
+			widget.setFont(textMain.getFont());
+			widget.setForegroundColor(textMain.getForegroundColor());
+			widget.setBackgroundColor(textMain.getBackgroundColor());
+			widget.setInsertColor(textMain.getInsertColor());
+			widget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
+			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
+		}
 	}
 
 	// saves the current widget values to the "preferences.txt" file
@@ -181,17 +249,11 @@ class Preferences {
 		f.write(textMain.getInsertColor() ~ "\n");
 		f.write(opacitySlider.getValue().to!string ~ "\n");
 		f.write(textMain.getSelectionForegroundColor() ~ "\n");
-		f.write(textMain.getSelectionBackgroundColor());
+		f.write(textMain.getSelectionBackgroundColor() ~ "\n");
+		f.write(saveOnModified);
 		f.close();  
 
-		for (int index; index < textWidgetArray.length; index++) {
-			textWidgetArray[index].setFont(textMain.getFont());
-			textWidgetArray[index].setForegroundColor(textMain.getForegroundColor());
-			textWidgetArray[index].setBackgroundColor(textMain.getBackgroundColor());
-			textWidgetArray[index].setInsertColor(textMain.getInsertColor());
-			textWidgetArray[index].setSelectionForegroundColor(textMain.getSelectionForegroundColor());
-			textWidgetArray[index].setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
-		}
+		applyPreferencesToWidgets();
 
 		writeln("Preferences saved!");
 		root.setTitle("Preferences saved!");

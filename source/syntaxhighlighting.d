@@ -12,21 +12,27 @@ class Syntax {
 
 	// variables
 	string appDir;
+	bool highlightOnLoad;
 
 	//constructor
 	this(string appDir) {
 		this.appDir = appDir;
 	}
 
+	public bool getHighlightOnLoad() {
+		return highlightOnLoad;
+	}
+
+	public void setHighlightOnLoad(bool state) {
+		highlightOnLoad = state;
+	}
+
+
 	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, bool manual = false) {
 		string[] supportedLanguages = [".d", ".c", ".cpp", ".h", ".hpp"];
 		if (supportedLanguages.canFind((noteBook.getTabText(noteBook.getCurrentTabId())).extension) || manual == true) {
 
 			Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
-
-			//textWidget.insertText(1, 0, "	");
-			//textWidget.deleteText(1, 0, 1, 1);
-			// add pair for <> {} [] () "" ''
 
 			textWidget.setForegroundColor("#fff");
 			configureTags(textWidget);

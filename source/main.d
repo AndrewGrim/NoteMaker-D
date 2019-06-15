@@ -18,7 +18,13 @@ class Application : TkdApplication {
 	Tabs tabs;
 	Syntax syntax;
 	NoteBook noteBook;
-	bool firstTextWidget = true;
+	bool applicationInitialization = true;
+	bool secondWidget = false;
+	int sideStatus;
+	Frame main;
+	Frame side;
+	NoteBook noteBookSide;
+	PanedWindow sideBySide;
 
 	// initialize user interface
 	override public void initInterface() {
@@ -33,21 +39,35 @@ class Application : TkdApplication {
 		// makes the code in "gui.d" usable in "main.d"
 		gui = new Gui(root);
 
-		// creates the noteBook and the default tab
-		noteBook = new NoteBook();
-		auto mainPane = gui.createMainPane();
+		this.sideBySide = new PanedWindow(root, "horizontal");
 
-		firstTextWidget = false;
+		this.main = new Frame(sideBySide);
+			noteBook = new NoteBook(main);
+				auto mainPane = gui.createMainPane();
 
-		// shows the noteBook adds the default tab to it
-		noteBook
-			.addTab("Main File", mainPane)
+			noteBook
+				.addTab("Main File", mainPane)
+				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
+
+		this.side = new Frame(sideBySide);
+			noteBookSide = new NoteBook(side);
+				auto sidePane = gui.createSidePane();
+			noteBookSide
+				.addTab("Side File", sidePane)
+				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
+		
+		this.sideBySide
+			.addPane(main)
+			.setPaneWeight(0, 20)
 			.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
+
+		applicationInitialization = false;
+		secondWidget = true;
 
 		// makes the code in other files usable in "main.d"
 		io = new InputOutput(root, gui.textMain, noteBook);
-		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, noteBook, gui.textWidgetArray);
-		tabs = new Tabs(root, noteBook, gui.textWidgetArray);
+		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.saveOnModified);
+		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
 		syntax = new Syntax(gui.appDir);
 
 		// create the menu bar at the top
@@ -55,7 +75,8 @@ class Application : TkdApplication {
 
 		// sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
-			.addEntry("Open File...", &openFile, "Ctrl+O")
+			.addEntry("Open File...", &openFile, "Ctrl+F")
+			.addEntry("Open File In A New Tab", &openFileInNewTab, "Ctrl+Alt+F")
 			.addEntry("Save", &saveFile, "Ctrl+S")
 			.addEntry("Save As", &saveFileAs, "Ctrl+Alt+S")
 			.addSeparator()
@@ -65,24 +86,29 @@ class Application : TkdApplication {
 			.addEntry("Previous Tab", &tabs.previousTab, "Ctrl+2") 
 			.addEntry("Reopen Closed Tab", &tabs.reopenClosedTab, "Ctrl+3")
 			.addSeparator()
-			.addEntry("Preferences", &openPreferences, "Ctrl+P")
-			.addSeparator()
-			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L")
+			.addEntry("SideBySide", &sideBySideMode, "Ctrl+B")
 			.addSeparator()
 			.addEntry("Quit", &exitApplication, "Ctrl+Q");
+
+		auto editMenu = new Menu(menuBar, "Edit", 0)
+			.addEntry("Preferences", &openPreferences, "Ctrl+P")
+			.addSeparator()
+			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L");
 
 		// runs every 3 seconds: resets the title 
 		this.root.setIdleCommand(delegate(CommandArgs args) {
 			root.setTitle("Note Maker");
-			root.setOpacity(gui.opacitySlider.getValue());
-			root.setIdleCommand(args.callback, 3000);
+			writeln("\n\nnoteBook: ", gui.frameWidgetArray[0].getState());
+			writeln("noteBookSide: ", gui.frameWidgetArraySide[0].getState());
+			root.setIdleCommand(args.callback, 100);
 		});
 
 		// sets opacity on application boot
 		root.setOpacity(gui.opacitySlider.getValue());
 
 		// sets up the keybindings
-		root.bind("<Control-o>", &openFile); // Open#
+		root.bind("<Control-f>", &openFile); // Open
+		root.bind("<Control-Alt-f>", &openFileInNewTab); // Open File In A New Tab
 		root.bind("<Control-s>", &saveFile); // Save
 		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
 		root.bind("<Control-t>", &tabs.createNewTab); // New Tab
@@ -92,6 +118,7 @@ class Application : TkdApplication {
 		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
+		root.bind("<Control-b>", &sideBySideMode); // Enable/Disable SideBySide Mode
 		// help control-h, as either a message or a help file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		root.bind("<Control-q>", &exitApplication); // Quit
 
@@ -106,11 +133,25 @@ class Application : TkdApplication {
 		}
 	}
 
+	// opens and closes the side by side mode
+	public void sideBySideMode(CommandArgs args) {
+		if (sideStatus % 2 == 0 || sideStatus == 0) {
+			sideBySide
+				.addPane(side)
+				.setPaneWeight(1, 20);
+		} else {
+			sideBySide.removePane(1);
+		}
+		sideStatus++;
+	}
+
 	// adds the indentation bindings to all the text widgets so that they can be actually used
 	public void addIndenationBindings(CommandArgs args) {
 		gui.textMain.bind("<Control-`>", &indent);
 		gui.textMain.bind("<Shift-Tab>", &unindent);
-		if (!firstTextWidget) {
+		if (!applicationInitialization) {
+			writeln("if");
+			writeln(tabs.updateArray());
 			foreach (widget; tabs.updateArray()) {
 				widget.bind("<Control-`>", &indent);
 				widget.bind("<Shift-Tab>", &unindent);
@@ -132,6 +173,15 @@ class Application : TkdApplication {
 	public void openFile(CommandArgs args) {
 		io.openOpenFileDialog(args, tabs.updateArray());
 		automaticHighlight(args);
+		syntax.setHighlightOnLoad(true);
+	}
+
+	// opens a file in a new tab
+	public void openFileInNewTab(CommandArgs args) {
+		tabs.createNewTab(args);
+		io.openOpenFileDialog(args, tabs.updateArray());
+		automaticHighlight(args);
+		syntax.setHighlightOnLoad(true);
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
@@ -147,25 +197,32 @@ class Application : TkdApplication {
 		automaticHighlight(args);
 	}
 
-	// saves the file every time the text widget's contents are modified
+	// saves the file every time the text widget's contents are modified if the checkbutton is checked
+	// except for: 
+	// when a file is being opened and the syntax is being highlighted or
+	// when a file is being opend
 	public void saveOnModified(CommandArgs args) {
-		// put code in IO
-		//change to proper syntax and add option to save as you go??
-		// maybe create a custom switch that uses the scale widget as base??? or just checkbox or radio
-		/*
-		if (tabs.updateArray()[0].getModified()) { 
-			auto f = File("c:/users/grim/desktop/testingModified.txt", "w");
-			f.write(tabs.updateArray()[0].getText());
-			f.close();
+		if (pref.getSaveOnModified()) {
+			foreach (textWidget; tabs.updateArray()) {
+				if (textWidget.getModified()) { 
+					if (!io.getOpeningFile && syntax.highlightOnLoad) {
+						io.setOpeningFile(false);
+						syntax.setHighlightOnLoad(false);
+					} else if (!io.getOpeningFile) {
+						io.setOpeningFile(false);
+					} else {
+						io.saveFile(args, tabs.updateArray());
+					}
 
-			tabs.updateArray()[0].setModified(false);
+					textWidget.setModified(false);
+				} 
+			}
 		}
-		*/
 	}
 
 	// opens the preferences window
 	public void openPreferences(CommandArgs args) {
-		pref.openPreferencesWindow(args, tabs.updateArray());
+		pref.openPreferencesWindow(args, tabs.updateArray(), tabs.updateArraySide());
 	}
 
 	// automatically highlights the defined syntax
