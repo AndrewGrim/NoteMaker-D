@@ -32,6 +32,7 @@ class Application : TkdApplication {
 		// sets up root
 		this.root = mainWindow()
 			.setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
+			.setTitle("Note Maker")
 			.setGeometry(1200, 800, 250, 50);
 
 		root.bind("<<TextWidgetCreated>>", &addIndenationBindings);
@@ -94,13 +95,7 @@ class Application : TkdApplication {
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
 			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L");
-
-		// runs every 3 seconds: resets the title 
-		this.root.setIdleCommand(delegate(CommandArgs args) {
-			root.setTitle("Note Maker");
-			root.setIdleCommand(args.callback, 3000);
-		});
-
+		
 		// sets opacity on application boot
 		root.setOpacity(gui.opacitySlider.getValue());
 
@@ -129,6 +124,11 @@ class Application : TkdApplication {
 				.setDetailMessage("Preferences file could not be found and has been created!")
 				.show();
 		}
+	}
+
+	// resets the title to the name of the program
+	public void changeTitle(CommandArgs args) {
+		root.setTitle("Note Maker");
 	}
 
 	// opens and closes the side by side mode
@@ -186,6 +186,7 @@ class Application : TkdApplication {
 			automaticHighlight(args);
 			syntax.setHighlightOnLoad(true);
 		}
+		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// opens a file in a new tab
@@ -200,6 +201,7 @@ class Application : TkdApplication {
 			automaticHighlight(args);
 			syntax.setHighlightOnLoad(true);
 		}
+		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
@@ -212,6 +214,7 @@ class Application : TkdApplication {
 			io.saveFile(args, noteBook, tabs.getTextWidgetArray());
 			automaticHighlight(args);
 		}
+		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves a file according to the dialog
@@ -223,6 +226,7 @@ class Application : TkdApplication {
 			io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
 			automaticHighlight(args);
 		}
+		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves the file every time the text widget's contents are modified if the checkbutton is checked

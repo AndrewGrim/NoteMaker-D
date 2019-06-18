@@ -1,0 +1,8 @@
+ask if user wants to save if the text has been modified upon quiting
+unbind traversal for notebook - prob wont work
+highlight arrays(syntax) - will need to do it line by line
+maybe do it all line by line?(syntax highlighting)
+highlight class names and function names
+implement testing assert and make docs
+better readme - how to build
+update screenshots, scale down mainWindow screenshot
