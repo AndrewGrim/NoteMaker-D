@@ -46,7 +46,7 @@ class Preferences {
 	}
 
 	// creates the preferences window and displays its contents
-	public void openPreferencesWindow(CommandArgs args, Text[] updateArray, Text[] updateArraySide) {
+	public void openPreferencesWindow(CommandArgs args, Text[] getTextWidgetArray, Text[] getTextWidgetArraySide) {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
@@ -108,8 +108,8 @@ class Preferences {
 		this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences
 		this.preferencesWindow.bind("<Return>", &this.pressButton); // Clicks Button
 
-		textWidgetArray = updateArray;
-		textWidgetArraySide = updateArraySide;
+		textWidgetArray = getTextWidgetArray;
+		textWidgetArraySide = getTextWidgetArraySide;
 	}
 
 	public bool getSaveOnModified() {

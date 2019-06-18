@@ -72,6 +72,7 @@ class Tabs {
 
 				textWidget.attachYScrollBar(yscrollWidget);
 
+		textWidget.focus();
 		if (isSideSelected) {
 			noteBookSide.addTab("New File", frameMain);
 			noteBookSide.selectTab(noteBook.getNumberOfTabs() - 1);
@@ -111,13 +112,23 @@ class Tabs {
 	}
 
 	// updates the array to include all the currently existing Text widgets
-	public Text[] updateArray() {
+	public Text[] getTextWidgetArray() {
 		return textWidgetArray;
 	}
 
 	// updates the array to include all the currently existing Text widgets
-	public Text[] updateArraySide() {
+	public Text[] getTextWidgetArraySide() {
 		return textWidgetArraySide;
+	}
+
+	// updates the array to include all the currently existing Frame widgets
+	public Frame[] getFrameArray() {
+		return frameWidgetArray;
+	}
+
+	// updates the array to include all the currently existing Frame widgets
+	public Frame[] getFrameArraySide() {
+		return frameWidgetArraySide;
 	}
 
 	// closes the tab by hiding it to keep the index consistent

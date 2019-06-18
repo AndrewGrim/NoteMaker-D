@@ -65,7 +65,7 @@ class Application : TkdApplication {
 		secondWidget = true;
 
 		// makes the code in other files usable in "main.d"
-		io = new InputOutput(root, gui.textMain, noteBook);
+		io = new InputOutput(root);
 		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.saveOnModified);
 		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
 		syntax = new Syntax(gui.appDir);
@@ -98,9 +98,7 @@ class Application : TkdApplication {
 		// runs every 3 seconds: resets the title 
 		this.root.setIdleCommand(delegate(CommandArgs args) {
 			root.setTitle("Note Maker");
-			writeln("\n\nnoteBook: ", gui.frameWidgetArray[0].getState());
-			writeln("noteBookSide: ", gui.frameWidgetArraySide[0].getState());
-			root.setIdleCommand(args.callback, 100);
+			root.setIdleCommand(args.callback, 3000);
 		});
 
 		// sets opacity on application boot
@@ -151,8 +149,8 @@ class Application : TkdApplication {
 		gui.textMain.bind("<Shift-Tab>", &unindent);
 		if (!applicationInitialization) {
 			writeln("if");
-			writeln(tabs.updateArray());
-			foreach (widget; tabs.updateArray()) {
+			writeln(tabs.getTextWidgetArray());
+			foreach (widget; tabs.getTextWidgetArray()) {
 				widget.bind("<Control-`>", &indent);
 				widget.bind("<Shift-Tab>", &unindent);
 			}
@@ -161,40 +159,70 @@ class Application : TkdApplication {
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
-		indentation.Indentation.indent(noteBook, tabs.updateArray());
+		if (tabs.checkCurrentNoteBook == "side") {
+			indentation.Indentation.indent(noteBookSide, tabs.getTextWidgetArraySide());
+		} else {
+			indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
+		}
 	}
 
 	// unindents the text, works with both single lines and selection
 	public void unindent(CommandArgs args) {
-		indentation.Indentation.unindent(noteBook, tabs.updateArray());
+		if (tabs.checkCurrentNoteBook == "side") {
+			indentation.Indentation.unindent(noteBookSide, tabs.getTextWidgetArraySide());
+		} else {
+			indentation.Indentation.unindent(noteBook, tabs.getTextWidgetArray());
+		}
 	}
 
 	// opens a file according to the dialog
 	public void openFile(CommandArgs args) {
-		io.openOpenFileDialog(args, tabs.updateArray());
-		automaticHighlight(args);
-		syntax.setHighlightOnLoad(true);
+		if (tabs.checkCurrentNoteBook == "side") {
+			io.openOpenFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
+			automaticHighlight(args);
+			syntax.setHighlightOnLoad(true);
+		} else {
+			io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
+			automaticHighlight(args);
+			syntax.setHighlightOnLoad(true);
+		}
 	}
 
 	// opens a file in a new tab
 	public void openFileInNewTab(CommandArgs args) {
 		tabs.createNewTab(args);
-		io.openOpenFileDialog(args, tabs.updateArray());
-		automaticHighlight(args);
-		syntax.setHighlightOnLoad(true);
+		if (tabs.checkCurrentNoteBook == "side") {
+			io.openOpenFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
+			automaticHighlight(args);
+			syntax.setHighlightOnLoad(true);
+		} else {
+			io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
+			automaticHighlight(args);
+			syntax.setHighlightOnLoad(true);
+		}
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
 	// opens the save dialog if there isnt a path associated with the file
-	public void saveFile(CommandArgs args) {
-		io.saveFile(args, tabs.updateArray());
-		automaticHighlight(args);
+	public void saveFile(CommandArgs args) { 
+		if (tabs.checkCurrentNoteBook == "side") {
+			io.saveFile(args, noteBookSide, tabs.getTextWidgetArraySide());
+			automaticHighlight(args);
+		} else {
+			io.saveFile(args, noteBook, tabs.getTextWidgetArray());
+			automaticHighlight(args);
+		}
 	}
 
 	// saves a file according to the dialog
 	public void saveFileAs(CommandArgs args) {
-		io.openSaveFileDialog(args, tabs.updateArray());
-		automaticHighlight(args);
+		if (tabs.checkCurrentNoteBook == "side") {
+			io.openSaveFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
+			automaticHighlight(args);
+		} else {
+			io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
+			automaticHighlight(args);
+		}
 	}
 
 	// saves the file every time the text widget's contents are modified if the checkbutton is checked
@@ -202,37 +230,64 @@ class Application : TkdApplication {
 	// when a file is being opened and the syntax is being highlighted or
 	// when a file is being opend
 	public void saveOnModified(CommandArgs args) {
-		if (pref.getSaveOnModified()) {
-			foreach (textWidget; tabs.updateArray()) {
-				if (textWidget.getModified()) { 
-					if (!io.getOpeningFile && syntax.highlightOnLoad) {
-						io.setOpeningFile(false);
-						syntax.setHighlightOnLoad(false);
-					} else if (!io.getOpeningFile) {
-						io.setOpeningFile(false);
-					} else {
-						io.saveFile(args, tabs.updateArray());
-					}
+		if (tabs.checkCurrentNoteBook == "side") {
+			if (pref.getSaveOnModified()) {
+				foreach (textWidget; tabs.getTextWidgetArraySide()) {
+					if (textWidget.getModified()) { 
+						if (!io.getOpeningFile && syntax.highlightOnLoad) {
+							io.setOpeningFile(false);
+							syntax.setHighlightOnLoad(false);
+						} else if (!io.getOpeningFile) {
+							io.setOpeningFile(false);
+						} else {
+							io.saveFile(args, noteBookSide, tabs.getTextWidgetArraySide());
+						}
 
-					textWidget.setModified(false);
-				} 
+						textWidget.setModified(false);
+					} 
+				}
 			}
-		}
+		} else {
+			if (pref.getSaveOnModified()) {
+				foreach (textWidget; tabs.getTextWidgetArray()) {
+					if (textWidget.getModified()) { 
+						if (!io.getOpeningFile && syntax.highlightOnLoad) {
+							io.setOpeningFile(false);
+							syntax.setHighlightOnLoad(false);
+						} else if (!io.getOpeningFile) {
+							io.setOpeningFile(false);
+						} else {
+							io.saveFile(args, noteBook, tabs.getTextWidgetArray());
+						}
+
+						textWidget.setModified(false);
+					} 
+				}
+			}
+		}	
 	}
 
 	// opens the preferences window
-	public void openPreferences(CommandArgs args) {
-		pref.openPreferencesWindow(args, tabs.updateArray(), tabs.updateArraySide());
+	public void openPreferences(CommandArgs args) {	
+		pref.openPreferencesWindow(args, tabs.getTextWidgetArray(), tabs.getTextWidgetArraySide());
 	}
 
 	// automatically highlights the defined syntax
 	public void automaticHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.updateArray());
+		if (tabs.checkCurrentNoteBook == "side") {
+			syntax.highlight(args, noteBookSide, tabs.getTextWidgetArraySide());
+		} else {
+			syntax.highlight(args, noteBook, tabs.getTextWidgetArray());
+		}
 	}
 
 	// manually highlights the defined syntax bypassing the supported extensions check, results will vary
 	public void manualHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.updateArray(), true);
+		if (tabs.checkCurrentNoteBook == "side") {
+			syntax.highlight(args, noteBookSide, tabs.getTextWidgetArraySide(), true);
+		} else {
+			syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), true);
+		}
 	}
 
 	// quits the application.

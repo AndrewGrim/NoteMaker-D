@@ -14,7 +14,7 @@ class Syntax {
 	string appDir;
 	bool highlightOnLoad;
 
-	//constructor
+	// constructor
 	this(string appDir) {
 		this.appDir = appDir;
 	}

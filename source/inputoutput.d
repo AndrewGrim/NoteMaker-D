@@ -13,18 +13,14 @@ class InputOutput {
 
 	// variables
 	Window root;
-	Text textMain;
 	string fileToOpen;
 	string fileToSave;
-	NoteBook noteBook;
 	string[string] tabNameFilePath;
 	bool openingFile;
 
 	// constructor
-	this(Window root, Text textMain, NoteBook noteBook) {
+	this(Window root) {
 		this.root = root;
-		this.textMain = textMain;
-		this.noteBook = noteBook;
 	}
 
 	public bool getOpeningFile() {
@@ -36,7 +32,7 @@ class InputOutput {
 	}
 
 	// opens the openFile dialog allowing you to choose the file to load
-	public void openOpenFileDialog(CommandArgs args, Text[] textWidgetArray) {
+	public void openOpenFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {
 		
 		auto openFile = new OpenFileDialog("Open a file")
 			.setMultiSelection(false)
@@ -83,7 +79,7 @@ class InputOutput {
 	}	
 
 	// opens the saveFile dialog allowing you to choose where to save
-	public void openSaveFileDialog(CommandArgs args, Text[] textWidgetArray) {	
+	public void openSaveFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {	
 
 		auto saveFile = new SaveFileDialog()
 			.setConfirmOverwrite(true)
@@ -117,11 +113,11 @@ class InputOutput {
 	}
 
 	// saves the file
-	public void saveFile(CommandArgs args, Text[] textWidgetArray) {
+	public void saveFile(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {
 
 		if (noteBook.getTabText(noteBook.getCurrentTabId()) == "Main File" || 
 			noteBook.getTabText(noteBook.getCurrentTabId()) == "New File") {
-			openSaveFileDialog(args, textWidgetArray);
+			openSaveFileDialog(args, noteBook, textWidgetArray);
 		} else {
 			fileToSave = tabNameFilePath.get(noteBook.getTabText(noteBook.getCurrentTabId()), "Record does not exist!");
 			if (fileToSave == "Record does not exist!") {
