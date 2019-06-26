@@ -1,4 +1,4 @@
-module preferences;
+module preferenceswindow;
 
 import tkd.tkdapplication;      
 import std.stdio;         
@@ -6,7 +6,7 @@ import std.file;
 import std.conv;
 
 // preferences window
-class Preferences {
+class PreferencesWindow {
 		
 	// variables
 	Window root;
@@ -243,14 +243,14 @@ class Preferences {
 	// saves the current widget values to the "preferences.txt" file
 	public void savePreferencesToFile(CommandArgs args) {
 		auto f = File(preferencesFile, "w");
-		f.write(textMain.getFont() ~ "\n");
-		f.write(textMain.getForegroundColor() ~ "\n");
-		f.write(textMain.getBackgroundColor() ~ "\n");
-		f.write(textMain.getInsertColor() ~ "\n");
-		f.write(opacitySlider.getValue().to!string ~ "\n");
-		f.write(textMain.getSelectionForegroundColor() ~ "\n");
-		f.write(textMain.getSelectionBackgroundColor() ~ "\n");
-		f.write(saveOnModified);
+		f.write("[FONT]\n" ~ textMain.getFont() ~ "\n");
+		f.write("[FOREGROUND COLOR]\n" ~ textMain.getForegroundColor() ~ "\n");
+		f.write("[BACKGROUND COLOR]\n" ~ textMain.getBackgroundColor() ~ "\n");
+		f.write("[INSERT CURSOR COLOR]\n" ~ textMain.getInsertColor() ~ "\n");
+		f.write("[OPACITY / TRANSPARENCY]\n" ~ opacitySlider.getValue().to!string ~ "\n");
+		f.write("[SELECTION FOREGROUND COLOR]\n" ~ textMain.getSelectionForegroundColor() ~ "\n");
+		f.write("[SELECTION BACKGROUND COLOR]\n" ~ textMain.getSelectionBackgroundColor() ~ "\n");
+		f.write("[SAVE ON MODIFIED]\n" ~ saveOnModified.to!string);
 		f.close();  
 
 		applyPreferencesToWidgets();

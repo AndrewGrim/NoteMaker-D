@@ -5,7 +5,7 @@ import std.stdio;
 import std.conv;
 import std.string;    
 import std.algorithm;
-import preferences, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
+import preferenceswindow, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
 
 // NoteMaker application.
 class Application : TkdApplication {
@@ -13,7 +13,7 @@ class Application : TkdApplication {
 	// variables
 	Window root;
 	Gui gui;
-	Preferences pref;
+	PreferencesWindow pref;
 	InputOutput io;
 	Tabs tabs;
 	Syntax syntax;
@@ -67,7 +67,7 @@ class Application : TkdApplication {
 
 		// makes the code in other files usable in "main.d"
 		io = new InputOutput(root);
-		pref = new Preferences(root, gui.textMain, gui.opacitySlider, gui.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.saveOnModified);
+		pref = new PreferencesWindow(root, gui.textMain, gui.opacitySlider, gui.preferences.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.preferences.saveOnModified);
 		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
 		syntax = new Syntax(gui.appDir);
 
@@ -119,7 +119,7 @@ class Application : TkdApplication {
 		root.bind("<<Modified>>", &saveOnModified);
 
 		// checks if the preferences file exists if false creates one and tells you about it
-		if (!gui.preferencesFileExists) {
+		if (!gui.preferences.preferencesFileExists) {
 			auto dialog = new MessageDialog(this.root, "Preferences File")
 				.setDetailMessage("Preferences file could not be found and has been created!")
 				.show();

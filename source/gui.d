@@ -7,6 +7,8 @@ import std.file;
 import std.string;
 import std.exception;
 
+import readpreferences;
+
 // gui setup
 class Gui {
 
@@ -14,18 +16,13 @@ class Gui {
 	Window root;
 	Text textMain;
 	Scale opacitySlider;
-	string preferencesFile;
-	bool preferencesFileExists;
-	string[] preferencesArray;
-	string font, foreground, background, insert, selectionForeground, selectionBackground;
-	float opacity = 1.0;
-	bool saveOnModified = false;
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
 	string appDir;
 	Text textSide;
 	Frame[] frameWidgetArray;
 	Frame[] frameWidgetArraySide;
+	readpreferences.Preferences preferences;
 
 	// constructor
 	this(Window root) {
@@ -46,34 +43,23 @@ class Gui {
 
 					// tries to read options from the "preferences.txt" file, if it fails the file is created with default values
 					try {
-						preferencesFile = getcwd() ~ "/preferences.txt";
-						
-						auto f = File(preferencesFile, "r");
 
-						preferencesFileExists = true;
-
-						// reading from file and adding each line into the "preferencesArray"
-						while (!f.eof()) {
-							string line = chomp(f.readln());
-							preferencesArray ~= line;
-						}
-
-						// spliting array values into aptly named variables
-						font = preferencesArray[0];
-						foreground = preferencesArray[1];
-						background = preferencesArray[2];
-						insert = preferencesArray[3];
-						opacity = preferencesArray[4].to!float;
-						selectionForeground = preferencesArray[5];
-						selectionBackground = preferencesArray[6];
-						saveOnModified = preferencesArray[7].to!bool;
+						preferences = readpreferences.readPreferencesFile();
 
 					} catch (ErrnoException error) {
+						writeln("error: ", error);
 						// when the preferences files is not found it is created with default values
-						preferencesFileExists = false;
+						preferences.preferencesFileExists = false;
 
-						auto f = File(preferencesFile, "w");
-						f.write("Helvetica\n#ffffff\n#000000\n#00ff00\n1.0\n#000000\n#b8baba\nfalse");
+						auto f = File(preferences.preferencesFile, "w");
+						f.write("[FONT]\nArial 12\n",
+						"[FOREGROUND COLOR]\n#ffffff\n",
+						"[BACKGROUND COLOR]\n#000000\n",
+						"[INSERT CURSOR COLOR]\n#00ff00\n",
+						"[OPACITY / TRANSPARENCY]\n1.0\n",
+						"[SELECTION FOREGROUND COLOR]\n#000000\n",
+						"[SELECTION BACKGROUND COLOR]\n#b8baba\n",
+						"[SAVE ON MODIFIED]\nfalse");
 						f.close();
 
 						writeln("Failed to read preferences file! Preferences file created!");
@@ -86,12 +72,12 @@ class Gui {
 						// tries to read in the values from file
 						try {
 							textMain
-								.setFont(font)
-								.setForegroundColor(foreground)
-								.setBackgroundColor(background)
-								.setInsertColor(insert)
-								.setSelectionForegroundColor(selectionForeground)
-								.setSelectionBackgroundColor(selectionBackground);
+								.setFont(preferences.font)
+								.setForegroundColor(preferences.foreground)
+								.setBackgroundColor(preferences.background)
+								.setInsertColor(preferences.insert)
+								.setSelectionForegroundColor(preferences.selectionForeground)
+								.setSelectionBackgroundColor(preferences.selectionBackground);
 						} catch (ErrnoException error) {
 							writeln("Custom text widget options couldn't be set!");
 						}
@@ -114,7 +100,7 @@ class Gui {
 			.pack(0, 0, GeometrySide.bottom, GeometryFill.x, AnchorPosition.center, false);
 			// tries to read values from file
 			try {
-				opacitySlider.setValue(opacity);
+				opacitySlider.setValue(preferences.opacity);
 			} catch (ErrnoException error) {
 				writeln("Custom opacity couldn't be set!");
 			} catch (ConvException convError) {
