@@ -11,13 +11,7 @@ import std.file;
 class Syntax {
 
 	// variables
-	string appDir;
 	bool highlightOnLoad;
-
-	// constructor
-	this(string appDir) {
-		this.appDir = appDir;
-	}
 
 	public bool getHighlightOnLoad() {
 		return highlightOnLoad;
@@ -35,14 +29,14 @@ class Syntax {
 
 			Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
-			textWidget.setForegroundColor("#fff");
+			textWidget.setForegroundColor("#ffffff");
 			configureTags(textWidget);
 			textWidget.addTag("tabWidth", "1.0", "end");
 			string[string] tags = [ "keywords.txt" : "keyword", "conditionals.txt" : "conditional", "loops.txt" : "loop",
 									"types.txt" : "type", "symbols.txt"  : "symbol", "numbers.txt"  : "number"];
 		
 			foreach (syntaxFile; dirEntries("syntax", SpanMode.shallow, false)) {
-				string filePath = appDir ~ "/" ~ syntaxFile;
+				string filePath = getcwd() ~ "/" ~ syntaxFile;
 				string[] fileContent;
 
 				auto f = File(filePath, "r");
@@ -111,9 +105,9 @@ class Syntax {
 					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 				textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (textWidget.getLine(line).countUntil("\"\\\"\"") != -1) {
+				if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
 					// corner case where the last " in "\"" would not get marked teal, because they're coded to work in pairs 
-					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 					fromStartToClose = 1;
 					stopIndex = startIndex + fromStartToClose;
 					foreach (item; removeTagsFromCharString) {
@@ -122,16 +116,16 @@ class Syntax {
 					textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 				for (int i = 1; i < numberOfLiterals; i++) {
-					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
-					fromStartToClose = textWidget.getPartialLine(line, startIndex + 1).countUntil('"').to!int + 2;
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
+					fromStartToClose = checkLineForNextToken(textWidget, line, startIndex + 1, '"') + 2;
 					stopIndex = startIndex + fromStartToClose;
 					foreach (item; removeTagsFromCharString) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 					}
 					textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-					if (textWidget.getLine(line).countUntil("\"\\\"\"") != -1) {
+					if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
 						// corner case where the last " in "\"" would not get marked green, because they're coded to work in pairs 
-						startIndex = textWidget.getPartialLine(line, stopIndex).countUntil('"').to!int + stopIndex;
+						startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 						fromStartToClose = 1;
 						stopIndex = startIndex + fromStartToClose;
 						foreach (item; removeTagsFromCharString) {
@@ -142,18 +136,18 @@ class Syntax {
 				}
 			}
 			// check for char
-			if (textWidget.getLine(line).countUntil("'") != -1) {
-				startIndex = (textWidget.getLine(line).countUntil("'")).to!int;
-				int fromStartToClose = (textWidget.getPartialLine(line, startIndex + 1).countUntil("'")).to!int + 2;
+			if (checkLineForToken(textWidget, line, "'") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "'");
+				int fromStartToClose = checkLineForNextToken(textWidget, line, startIndex + 1, "'") + 2;
 				stopIndex = startIndex + fromStartToClose;
-				int numberOfLiterals = (textWidget.getLine(line).count("'")).to!int / 2;
+				int numberOfLiterals = numberOfCharsInLine(textWidget, line);
 				foreach (item; removeTagsFromCharString) {
 					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
-				textWidget.addTag("char", line.to!string ~ "." ~ startIndex.to!string, line.to!string ~ "." ~ stopIndex.to!string);
+				textWidget.addTag("char", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				for (int i = 1; i < numberOfLiterals; i++) {
-					startIndex = textWidget.getPartialLine(line, stopIndex).countUntil("'").to!int + stopIndex;
-					fromStartToClose = textWidget.getPartialLine(line, startIndex + 1).countUntil("'").to!int + 2;
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "'") + stopIndex;
+					fromStartToClose = checkLineForNextToken(textWidget, line, stopIndex, "'") + 2;
 					stopIndex = startIndex + fromStartToClose;
 					foreach (item; removeTagsFromCharString) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -162,11 +156,11 @@ class Syntax {
 				}
 			}
 			// check for comment
-			if (textWidget.getLine(line).countUntil("//") != -1 || textWidget.getLine(line).countUntil("///") != -1) {
-				if (textWidget.getPartialLine(line, (textWidget.getLine(line).countUntil("//") + 2).to!int).countUntil("\"") == 0 ||
-					textWidget.getPartialLine(line, (textWidget.getLine(line).countUntil("//") + 2).to!int).countUntil("\"") == 1) {
+			if (checkLineForToken(textWidget, line, "//") != -1 || checkLineForToken(textWidget, line, "///") != -1) {
+				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 0 ||
+					checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 1) {
 				} else {
-					startIndex = (textWidget.getLine(line).countUntil("//")).to!int;
+					startIndex = checkLineForToken(textWidget, line, "//");
 					foreach (item; removeTagsFromComments) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), lineEnd(line));
 					}
@@ -174,12 +168,12 @@ class Syntax {
 				}
 			}
 			// check for multiline comment
-			if (textWidget.getLine(line).countUntil("/*") != -1) {
+			if (checkLineForToken(textWidget, line, "/*") != -1) {
 				// comment in string literal
-				if (textWidget.getPartialLine(line, (textWidget.getLine(line).countUntil("/*") + 2).to!int).countUntil("\"") == 0) {
+				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "/*") + 2, '"') == 0) {
 					// do nothing
 				} else {
-					startIndex = (textWidget.getLine(line).countUntil("/*")).to!int;
+					startIndex = checkLineForToken(textWidget, line, "/*");
 					isMultiLineComment = true;
 					foreach (item; removeTagsFromComments) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), lineEnd(line));
@@ -193,8 +187,8 @@ class Syntax {
 				textWidget.addTag("comment", lineStart(line), lineEnd(line));
 			}
 			// closes multiline comment
-			if (textWidget.getLine(line).countUntil("*/") != -1) {
-				if (textWidget.getPartialLine(line, (textWidget.getLine(line).countUntil("*/")).to!int + 2).countUntil("\"") == 0) {
+			if (checkLineForToken(textWidget, line, "*/") != -1) {
+				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "*/") + 2, '"') == 0) {
 					// do nothing
 				} else {
 					isMultiLineComment = false;
@@ -207,51 +201,63 @@ class Syntax {
 		}
 	}
 
-	public static int getNumberOfLinesFromText(Text textWidget) {
+	public int getNumberOfLinesFromText(Text textWidget) {
 		return (textWidget.getNumberOfLines().split(".")[0]).to!int;
 	}
 
-	public static int checkLineForToken(Text textWidget, int line, char token) {
+	public int checkLineForToken(Text textWidget, int line, char token) {
 		return (textWidget.getLine(line).countUntil(token)).to!int;
 	}
 
-	public static int checkLineForToken(Text textWidget, int line, string token) {
+	public int checkLineForToken(Text textWidget, int line, string token) {
 		return (textWidget.getLine(line).countUntil(token)).to!int;
 	}
 
-	public static int getStringLength(Text textWidget, int line, char token, int startIndex) {
+	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, char token) {
+		return textWidget.getPartialLine(line, stopIndex).countUntil(token).to!int;
+	}
+
+	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, string token) {
+		return textWidget.getPartialLine(line, stopIndex).countUntil(token).to!int;
+	}
+
+	public int getStringLength(Text textWidget, int line, char token, int startIndex) {
 		return (textWidget.getPartialLine(line, startIndex + 1).countUntil(token)).to!int + 2;
 	}
 
-	public static int numberOfStringsInLine(Text textWidget, int line) {
-		return (textWidget.getLine(line).count("\"")).to!int / 2;
+	public int numberOfStringsInLine(Text textWidget, int line) {
+		return (textWidget.getLine(line).count('"')).to!int / 2;
 	}
 
-	public static string startIndexFn(int line, int startIndex) {
+	public int numberOfCharsInLine(Text textWidget, int line) {
+		return (textWidget.getLine(line).count("'")).to!int / 2;
+	}
+
+	public string startIndexFn(int line, int startIndex) {
 		return line.to!string ~ "." ~ startIndex.to!string;
 	} 
 
-	public static string stopIndexFn(int line, int stopIndex) {
+	public string stopIndexFn(int line, int stopIndex) {
 		return line.to!string ~ "." ~ stopIndex.to!string;
 	} 
 
-	public static string lineStart(int line) {
+	public string lineStart(int line) {
 		return line.to!string ~ ".0";
 	}
 
-	public static string lineEnd(int line) {
+	public string lineEnd(int line) {
 		return line.to!string ~ ".end";
 	}
 
-	public static string endOfMultiLineComment(Text textWidget, int line) {
+	public string endOfMultiLineComment(Text textWidget, int line) {
 		return (textWidget.getLine(line).countUntil("*/") + 2).to!string;
 	}
 
-	public static string lineString(int line) {
+	public string lineString(int line) {
 		return line.to!string;
 	}
 
-	public static string lineStringDot(int line) {
+	public string lineStringDot(int line) {
 		return line.to!string ~ ".";
 	}
 	

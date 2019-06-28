@@ -18,7 +18,6 @@ class Gui {
 	Scale opacitySlider;
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
-	string appDir;
 	Text textSide;
 	Frame[] frameWidgetArray;
 	Frame[] frameWidgetArraySide;
@@ -106,8 +105,6 @@ class Gui {
 			} catch (ConvException convError) {
 				writeln("Couldn't convert opacity string to float!");
 			}
-
-		appDir = getcwd();
 
 		return frameMain;
 	}

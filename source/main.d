@@ -69,7 +69,7 @@ class Application : TkdApplication {
 		io = new InputOutput(root);
 		pref = new PreferencesWindow(root, gui.textMain, gui.opacitySlider, gui.preferences.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.preferences.saveOnModified);
 		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
-		syntax = new Syntax(gui.appDir);
+		syntax = new Syntax();
 
 		// create the menu bar at the top
 		auto menuBar = new MenuBar(root);
