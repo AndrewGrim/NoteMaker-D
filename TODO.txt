@@ -1,10 +1,13 @@
 ask if user wants to save if the text has been modified upon quiting
+add icon to notebook tab when file has been modified but not saved
+label with row and column selection
+move opacity slider to preferences
 highlight arrays(syntax) - will need to do it line by line
 maybe do it all line by line?(syntax highlighting)
-highlight escape characters
 highlight class names and function names
 line numbers
 indentation marks
 implement testing assert and make docs
+search/find widget
 better readme - how to build
 update screenshots, scale down mainWindow screenshot

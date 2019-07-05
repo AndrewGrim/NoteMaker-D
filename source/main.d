@@ -67,7 +67,7 @@ class Application : TkdApplication {
 
 		// makes the code in other files usable in "main.d"
 		io = new InputOutput(root);
-		pref = new PreferencesWindow(root, gui.textMain, gui.opacitySlider, gui.preferences.preferencesFile, gui.textWidgetArray, gui.textWidgetArraySide, gui.preferences.saveOnModified);
+		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.textWidgetArraySide);
 		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
 		syntax = new Syntax();
 
@@ -97,7 +97,7 @@ class Application : TkdApplication {
 			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L");
 		
 		// sets opacity on application boot
-		root.setOpacity(gui.opacitySlider.getValue());
+		root.setOpacity(gui.preferences.opacity);
 
 		// sets up the keybindings
 		root.bind("<Control-f>", &openFile); // Open
@@ -112,11 +112,12 @@ class Application : TkdApplication {
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
 		root.bind("<Control-b>", &sideBySideMode); // Enable/Disable SideBySide Mode
-		// help control-h, as either a message or a help file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// help control-h, as either a message or a help file // TODO help or about
 		root.bind("<Control-q>", &exitApplication); // Quit
 
 		// virtual event functions
 		root.bind("<<Modified>>", &saveOnModified);
+		root.bind("<<ResetTitle>>", &resetTitle);
 
 		// checks if the preferences file exists if false creates one and tells you about it
 		if (!gui.preferences.preferencesFileExists) {
@@ -133,6 +134,14 @@ class Application : TkdApplication {
 
 	// opens and closes the side by side mode
 	public void sideBySideMode(CommandArgs args) {
+		// TODO test stuff for line numbers
+		/*
+		string text;
+		for (int i = 1; i < 201; i++) {
+			text ~= i.to!string ~ "\n";
+		}
+		gui.lineNumber.setText(text);
+		*/
 		if (sideStatus % 2 == 0 || sideStatus == 0) {
 			sideBySide
 				.addPane(side)
@@ -186,7 +195,6 @@ class Application : TkdApplication {
 			automaticHighlight(args);
 			syntax.setHighlightOnLoad(true);
 		}
-		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// opens a file in a new tab
@@ -201,7 +209,6 @@ class Application : TkdApplication {
 			automaticHighlight(args);
 			syntax.setHighlightOnLoad(true);
 		}
-		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
@@ -214,7 +221,6 @@ class Application : TkdApplication {
 			io.saveFile(args, noteBook, tabs.getTextWidgetArray());
 			automaticHighlight(args);
 		}
-		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves a file according to the dialog
@@ -226,7 +232,6 @@ class Application : TkdApplication {
 			io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
 			automaticHighlight(args);
 		}
-		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// saves the file every time the text widget's contents are modified if the checkbutton is checked
@@ -256,12 +261,13 @@ class Application : TkdApplication {
 				foreach (textWidget; tabs.getTextWidgetArray()) {
 					if (textWidget.getModified()) { 
 						if (!io.getOpeningFile && syntax.highlightOnLoad) {
-							io.setOpeningFile(false);
+							io.setOpeningFile(false); // WTF this seems dumb
 							syntax.setHighlightOnLoad(false);
 						} else if (!io.getOpeningFile) {
-							io.setOpeningFile(false);
+							io.setOpeningFile(false); // WTF this seems dumb
 						} else {
 							io.saveFile(args, noteBook, tabs.getTextWidgetArray());
+							// FIXME save on modified only works once you load the file doesnt work when creating a new file
 						}
 
 						textWidget.setModified(false);
@@ -292,6 +298,11 @@ class Application : TkdApplication {
 		} else {
 			syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), true);
 		}
+	}
+
+	// resets the title after 3seconds once a <<ResetTitle>> event is detected
+	public void resetTitle(CommandArgs args) {
+		root.setIdleCommand(&changeTitle, 3000);
 	}
 
 	// quits the application.

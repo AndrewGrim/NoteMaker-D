@@ -68,6 +68,7 @@ class InputOutput {
 			
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 			root.setTitle("File opened: " ~ fileToOpen);
+			root.generateEvent("<<ResetTitle>>");
 			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
 
 			string numOfLines = textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines();
@@ -106,6 +107,7 @@ class InputOutput {
 
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 			root.setTitle("File saved: " ~ fileToSave);
+			root.generateEvent("<<ResetTitle>>");
 			tabNameFilePath[baseName(fileToSave)] = fileToSave;
 
 			textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
@@ -133,6 +135,7 @@ class InputOutput {
 
 				noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 				root.setTitle("File saved: " ~ fileToSave);
+				root.generateEvent("<<ResetTitle>>");
 
 				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
 			}

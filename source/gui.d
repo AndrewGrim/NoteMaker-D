@@ -14,8 +14,8 @@ class Gui {
 
 	// variables
 	Window root;
+	Label lineNumber;
 	Text textMain;
-	Scale opacitySlider;
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
 	Text textSide;
@@ -64,6 +64,13 @@ class Gui {
 						writeln("Failed to read preferences file! Preferences file created!");
 					}
 
+					// gui.lineNumber.setText("\n2"); // TODO add line numbers into the editor somehow
+					this.lineNumber = new Label(container, "1")
+						.setFont("Arial 12")
+						.setForegroundColor("black")
+						.setBackgroundColor("yellow");
+						//.pack(0, 0, GeometrySide.left, GeometryFill.y, AnchorPosition.north, false);
+
 					// creates the "textMain" widget and sets the options if the "preferences.txt" file exists
 					this.textMain = new Text(container)
 						.focus()
@@ -92,19 +99,7 @@ class Gui {
 					this.textMain.attachYScrollBar(yscroll);
 					root.generateEvent("<<TextWidgetCreated>>");
 
-		// creates the scale "opacitySlider" for changing the opacity/alpha setting
-		this.opacitySlider = new Scale()
-			.setFromValue(0.2)
-			.setToValue(1.0)
-			.pack(0, 0, GeometrySide.bottom, GeometryFill.x, AnchorPosition.center, false);
-			// tries to read values from file
-			try {
-				opacitySlider.setValue(preferences.opacity);
-			} catch (ErrnoException error) {
-				writeln("Custom opacity couldn't be set!");
-			} catch (ConvException convError) {
-				writeln("Couldn't convert opacity string to float!");
-			}
+					//this.textMain.embedWidget(0, 0, lineNumber); // TODO deactivated embedded widget
 
 		return frameMain;
 	}
@@ -140,7 +135,7 @@ class Gui {
 						.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
 					this.textSide.attachYScrollBar(yscrollSide);
-					//root.generateEvent("<<TextWidgetCreated>>");//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					//root.generateEvent("<<TextWidgetCreated>>"); // FIXME maybe remove possibly along with sidebyside
 
 		return frameSide;
 	}

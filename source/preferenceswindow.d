@@ -4,6 +4,9 @@ import tkd.tkdapplication;
 import std.stdio;         
 import std.file;
 import std.conv;
+import std.exception;
+
+import readpreferences;
 
 // preferences window
 class PreferencesWindow {
@@ -12,7 +15,7 @@ class PreferencesWindow {
 	Window root;
 	Text textMain;
 	Scale opacitySlider;
-	string preferencesFile;
+	readpreferences.Preferences preferences;
 	Window preferencesWindow;
 	Frame preferencesFrame;
 	Button changeFont;
@@ -26,23 +29,18 @@ class PreferencesWindow {
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
 	CheckButton setSaveOnModified;
-	bool saveOnModified;
 
 
 	// constructor
-	this(Window root, Text textMain, Scale opacitySlider, string preferencesFile,
-		Text[] textWidgetArray, Text[] textWidgetArraySide, bool saveOnModified) {
+	this(Window root, Text textMain, readpreferences.Preferences preferences,
+		Text[] textWidgetArray, Text[] textWidgetArraySide) {
 
 		this.root = root;
 		this.textMain = textMain;
-		this.opacitySlider = opacitySlider;
-		this.preferencesFile = preferencesFile;
+		this.preferences = preferences;
 		this.textWidgetArray = textWidgetArray;
 		this.textWidgetArraySide = textWidgetArraySide;
-		this.saveOnModified = saveOnModified;
 
-		// sets up the command for the scale widget
-		opacitySlider.setCommand(&this.changeOpacity);
 	}
 
 	// creates the preferences window and displays its contents
@@ -90,14 +88,29 @@ class PreferencesWindow {
 		this.setSaveOnModified = new CheckButton(preferencesFrame, "Set Save On Modified")
 			.setCommand(delegate(CommandArgs args) {
 				if (setSaveOnModified.isChecked()) {
-					saveOnModified = true;
+					preferences.saveOnModified = true;
 				} else {
-					saveOnModified = false;
+					preferences.saveOnModified = false;
 				}
 			})
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
-			if (saveOnModified) {
+			if (preferences.saveOnModified) {
 				setSaveOnModified.check();
+			}
+
+		// creates the scale "opacitySlider" for changing the opacity/alpha setting
+		this.opacitySlider = new Scale(preferencesFrame)
+			.setFromValue(0.2)
+			.setToValue(1.0)
+			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+			opacitySlider.setCommand(&this.changeOpacity);
+			// tries to read values from file
+			try {
+				opacitySlider.setValue(preferences.opacity);
+			} catch (ErrnoException error) {
+				writeln("Custom opacity couldn't be set!");
+			} catch (ConvException convError) {
+				writeln("Couldn't convert opacity string to float!");
 			}
 
 		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
@@ -113,7 +126,7 @@ class PreferencesWindow {
 	}
 
 	public bool getSaveOnModified() {
-		return saveOnModified;
+		return preferences.saveOnModified;
 	}
 
 	// opens the font dialog allowing you to choose the options
@@ -219,7 +232,7 @@ class PreferencesWindow {
 	}
 
 	// sets the text widget options to the ones chosen in preferences
-	// seems redundant!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// FIXME seems redundant
 	public void applyPreferencesToWidgets() {
 		foreach (widget; textWidgetArray) {
 			widget.setFont(textMain.getFont());
@@ -242,7 +255,7 @@ class PreferencesWindow {
 
 	// saves the current widget values to the "preferences.txt" file
 	public void savePreferencesToFile(CommandArgs args) {
-		auto f = File(preferencesFile, "w");
+		auto f = File(preferences.preferencesFile, "w");
 		f.write("[FONT]\n" ~ textMain.getFont() ~ "\n");
 		f.write("[FOREGROUND COLOR]\n" ~ textMain.getForegroundColor() ~ "\n");
 		f.write("[BACKGROUND COLOR]\n" ~ textMain.getBackgroundColor() ~ "\n");
@@ -250,13 +263,14 @@ class PreferencesWindow {
 		f.write("[OPACITY / TRANSPARENCY]\n" ~ opacitySlider.getValue().to!string ~ "\n");
 		f.write("[SELECTION FOREGROUND COLOR]\n" ~ textMain.getSelectionForegroundColor() ~ "\n");
 		f.write("[SELECTION BACKGROUND COLOR]\n" ~ textMain.getSelectionBackgroundColor() ~ "\n");
-		f.write("[SAVE ON MODIFIED]\n" ~ saveOnModified.to!string);
+		f.write("[SAVE ON MODIFIED]\n" ~ preferences.saveOnModified.to!string);
 		f.close();  
 
 		applyPreferencesToWidgets();
 
 		writeln("Preferences saved!");
 		root.setTitle("Preferences saved!");
+		root.generateEvent("<<ResetTitle>>");
 
 		closePreferences(args);
 	}

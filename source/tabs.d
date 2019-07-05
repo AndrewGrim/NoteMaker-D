@@ -133,7 +133,7 @@ class Tabs {
 
 	// closes the tab by hiding it to keep the index consistent
 	public void closeTab(CommandArgs args) {
-		// sometimes when you close a tab in side, the focus is shifted over to main!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// sometimes when you close a tab in side, the focus is shifted over to main // FIXME sidebyside not working great
 		checkCurrentNoteBook();
 
 		if (isSideSelected) {
