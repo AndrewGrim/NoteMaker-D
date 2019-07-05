@@ -8,6 +8,7 @@ import std.algorithm;
 import std.path;
 import std.file;
 
+
 class Syntax {
 
 	// variables
@@ -68,6 +69,7 @@ class Syntax {
 			.configTag("comment", "-foreground green")
 			.configTag("char", "-foreground teal")
 			.configTag("string", "-foreground teal")
+			.configTag("escapeCharacter", "-foreground indigo")
 			.configTag("tabWidth", "-tabs {1c}");
 	}
 
@@ -84,14 +86,13 @@ class Syntax {
 		}
 	}
 		
-	// go through and shorten all the lines probably by using a function for counUntil and the like!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	public void lineByLineHighlight(Text textWidget) {
 		bool isMultiLineComment = false;
 		bool withinString = false;
 		int startIndex;
 		int stopIndex;
 		int patternNumber = 1;
-		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string"];
+		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter"];
 		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment"];
 
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
@@ -155,10 +156,31 @@ class Syntax {
 					textWidget.addTag("char", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 			}
+			// check for escape characters
+			if (checkLineForToken(textWidget, line, "\\") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "\\");
+				stopIndex = startIndex + 2;
+				int numberOfEscapes = numberOfEscapesInLine(textWidget, line);
+				foreach (item; removeTagsFromComments) {
+					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+				textWidget.addTag("escapeCharacter", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				for (int i = 1; i < numberOfEscapes; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "\\") + stopIndex;
+					stopIndex = startIndex + 2;
+					if (i == (numberOfEscapes - 1)) {
+						stopIndex--;
+					}
+					foreach (item; removeTagsFromComments) {
+						textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+					}
+					textWidget.addTag("escapeCharacter", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
 			// check for comment
 			if (checkLineForToken(textWidget, line, "//") != -1 || checkLineForToken(textWidget, line, "///") != -1) {
-				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 0 ||
-					checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 1) {
+				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 0) {
+					// check if the next char after // is " and ignore it because the "comment" is part of a string
 				} else {
 					startIndex = checkLineForToken(textWidget, line, "//");
 					foreach (item; removeTagsFromComments) {
@@ -214,11 +236,11 @@ class Syntax {
 	}
 
 	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, char token) {
-		return textWidget.getPartialLine(line, stopIndex).countUntil(token).to!int;
+		return (textWidget.getPartialLine(line, stopIndex).countUntil(token)).to!int;
 	}
 
 	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, string token) {
-		return textWidget.getPartialLine(line, stopIndex).countUntil(token).to!int;
+		return (textWidget.getPartialLine(line, stopIndex).countUntil(token)).to!int;
 	}
 
 	public int getStringLength(Text textWidget, int line, char token, int startIndex) {
@@ -231,6 +253,10 @@ class Syntax {
 
 	public int numberOfCharsInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("'")).to!int / 2;
+	}
+
+	public int numberOfEscapesInLine(Text textWidget, int line) {
+		return (textWidget.getLine(line).count("\\")).to!int;
 	}
 
 	public string startIndexFn(int line, int startIndex) {
@@ -259,6 +285,5 @@ class Syntax {
 
 	public string lineStringDot(int line) {
 		return line.to!string ~ ".";
-	}
-	
+	}	
 }
