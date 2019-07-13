@@ -70,6 +70,7 @@ class Syntax {
 			.configTag("char", "-foreground teal")
 			.configTag("string", "-foreground teal")
 			.configTag("escapeCharacter", "-foreground indigo")
+			.configTag("function", "-foreground blue")
 			.configTag("tabWidth", "-tabs {1c}");
 	}
 
@@ -78,7 +79,7 @@ class Syntax {
 		foreach (item; patternIndexes) {
 			string[] tclGarbage = item.split('.');
 			int lineIndex = tclGarbage[0].to!int;
-			int charIndex = tclGarbage[1].to!int ;
+			int charIndex = tclGarbage[1].to!int;
 			string startIndex = lineIndex.to!string ~ "." ~ charIndex.to!string;
 			int endIndex = charIndex.to!int + pattern.length.to!int;
 			string stopIndex = lineIndex.to!string ~ "." ~ endIndex.to!string;
@@ -92,14 +93,46 @@ class Syntax {
 		int startIndex;
 		int stopIndex;
 		int patternNumber = 1;
-		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter"];
-		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment"];
+		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function"];
+		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function"];
 
-		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) { // TODO ??change to global variables to reduce all the arguments in methods?
-			// check for functions // TODO highlight function names 
-			//if (checkLineForToken(textWidget, line, "(") != -1) {
-			//	writeln("parenthases detected on line: ", line);
-			//}
+		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
+			// check for functions
+			if (checkLineForToken(textWidget, line, "(") != -1) {
+				stopIndex = checkLineForToken(textWidget, line, "(");
+				string[] whitespace = textWidget.findAllInLine(" ", line);
+				string[] tab = textWidget.findAllInLine("\t", line);
+				string[] parenthases = textWidget.findAllInLine("(", line);
+				string[] dot = textWidget.findAllInLine(".", line);
+
+				int lastWhitespace = 0;
+				int lastTab = 0;
+				int lastParenthases = 0;
+				int lastDot = 0;
+				foreach (item; whitespace) {
+					if (item.split(".")[1].to!int > lastWhitespace && item.split(".")[1].to!int < stopIndex) {
+						lastWhitespace = item.split(".")[1].to!int;
+					}
+				}
+				foreach (item; tab) {
+					if (item.split(".")[1].to!int > lastTab && item.split(".")[1].to!int < stopIndex) {
+						lastTab = item.split(".")[1].to!int;
+					}
+				}
+				foreach (item; parenthases) {
+					if (item.split(".")[1].to!int > lastParenthases && item.split(".")[1].to!int < stopIndex) {
+						lastParenthases = item.split(".")[1].to!int;
+					}
+				}
+				foreach (item; dot) {
+					if (item.split(".")[1].to!int > lastDot && item.split(".")[1].to!int < stopIndex) {
+						lastDot = item.split(".")[1].to!int;
+					}
+				}
+				startIndex = max(lastWhitespace, lastTab, lastParenthases, lastDot);
+				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				// TODO now repeat for all occurances of parenthases in the line
+			}
 			// check for literal string
 			if (checkLineForToken(textWidget, line, '"') != -1) {
 				startIndex = checkLineForToken(textWidget, line, '"');
@@ -291,4 +324,3 @@ class Syntax {
 		return line.to!string ~ ".";
 	}	
 }
-
