@@ -17,10 +17,12 @@ class InputOutput {
 	string fileToSave;
 	string[string] tabNameFilePath;
 	bool openingFile;
+	Text lineNumbersTextWidget;
 
 	// constructor
-	this(Window root) {
+	this(Window root, Text lineNumbersTextWidget) {
 		this.root = root;
+		this.lineNumbersTextWidget = lineNumbersTextWidget;
 	}
 
 	public bool getOpeningFile() {
@@ -63,6 +65,11 @@ class InputOutput {
 
 			f.close();
 
+			int removeLines = 1;
+			if (fileContent.endsWith("\n\n")) {
+				removeLines = 2;
+			}
+
 			textWidgetArray[noteBook.getCurrentTabId()].clear();
 			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent, "tabWidth");
 			
@@ -71,9 +78,29 @@ class InputOutput {
 			root.generateEvent("<<ResetTitle>>");
 			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
 
-			string numOfLines = textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines();
-			string[] linesConv = numOfLines.split(".");
-			textWidgetArray[noteBook.getCurrentTabId()].deleteText((linesConv[0].to!int - 2).to!string ~ ".0", "end");
+			string numOfLines = ((textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0].to!int) - removeLines).to!string;
+			textWidgetArray[noteBook.getCurrentTabId()].deleteText(numOfLines ~ ".0", "end");
+
+			string lineNumbers;
+			for (int i = 1; i < numOfLines.to!int; i++) {
+				if (i == (numOfLines.to!int - 1)) {
+					lineNumbers ~= i.to!string;
+				} else {
+					lineNumbers ~= i.to!string ~ "\n";
+				}
+			}
+			lineNumbersTextWidget.setReadOnly(false);
+			if ((numOfLines.length).to!int < 3) {
+				lineNumbersTextWidget.setWidth(3);
+			} else {
+				lineNumbersTextWidget.setWidth((numOfLines.length).to!int);
+			}
+			lineNumbersTextWidget.setFont(textWidgetArray[noteBook.getCurrentTabId()].getFont());
+			lineNumbersTextWidget.setForegroundColor(textWidgetArray[noteBook.getCurrentTabId()].getForegroundColor());
+			lineNumbersTextWidget.setBackgroundColor(textWidgetArray[noteBook.getCurrentTabId()].getBackgroundColor());
+			lineNumbersTextWidget.clear();
+			lineNumbersTextWidget.appendText(lineNumbers, "alignCenter");
+			lineNumbersTextWidget.setReadOnly();
 
 			openingFile = true;
 		}

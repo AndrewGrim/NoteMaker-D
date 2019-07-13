@@ -29,18 +29,19 @@ class PreferencesWindow {
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
 	CheckButton setSaveOnModified;
+	Text lineNumbersTextWidget;
 
 
 	// constructor
 	this(Window root, Text textMain, readpreferences.Preferences preferences,
-		Text[] textWidgetArray, Text[] textWidgetArraySide) {
+		Text[] textWidgetArray, Text[] textWidgetArraySide, Text lineNumbersTextWidget) {
 
 		this.root = root;
 		this.textMain = textMain;
 		this.preferences = preferences;
 		this.textWidgetArray = textWidgetArray;
 		this.textWidgetArraySide = textWidgetArraySide;
-
+		this.lineNumbersTextWidget = lineNumbersTextWidget;
 	}
 
 	// creates the preferences window and displays its contents
@@ -140,6 +141,8 @@ class PreferencesWindow {
 				foreach (widget; textWidgetArraySide) {
 					widget.setFont(args.dialog.font);
 				}
+
+				lineNumbersTextWidget.setFont(args.dialog.font);
 			})
 			.show();
 
@@ -160,6 +163,8 @@ class PreferencesWindow {
 			widget.setForegroundColor(dialog.getResult);
 		}
 
+		lineNumbersTextWidget.setForegroundColor(dialog.getResult);
+
 		savePreferencesToFile(args);
 	}
 
@@ -176,6 +181,8 @@ class PreferencesWindow {
 		foreach (widget; textWidgetArraySide) {
 			widget.setBackgroundColor(dialog.getResult);
 		}
+
+		lineNumbersTextWidget.setBackgroundColor(dialog.getResult);
 
 		savePreferencesToFile(args);
 	}
@@ -194,6 +201,8 @@ class PreferencesWindow {
 			widget.setInsertColor(dialog.getResult);
 		}
 
+		lineNumbersTextWidget.setInsertColor(dialog.getResult);
+
 		savePreferencesToFile(args);
 	}
 
@@ -211,6 +220,9 @@ class PreferencesWindow {
 			widget.setSelectionForegroundColor(dialog.getResult);
 		}
 
+		lineNumbersTextWidget.setSelectionForegroundColor(dialog.getResult);
+
+
 		savePreferencesToFile(args);
 	}
 
@@ -227,6 +239,8 @@ class PreferencesWindow {
 		foreach (widget; textWidgetArraySide) {
 			widget.setSelectionBackgroundColor(dialog.getResult);
 		}
+
+		lineNumbersTextWidget.setSelectionBackgroundColor(dialog.getResult);
 
 		savePreferencesToFile(args);
 	}
@@ -251,6 +265,13 @@ class PreferencesWindow {
 			widget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
 			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
 		}
+
+		lineNumbersTextWidget.setFont(textMain.getFont());
+		lineNumbersTextWidget.setForegroundColor(textMain.getForegroundColor());
+		lineNumbersTextWidget.setBackgroundColor(textMain.getBackgroundColor());
+		lineNumbersTextWidget.setInsertColor(textMain.getInsertColor());
+		lineNumbersTextWidget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
+		lineNumbersTextWidget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
 	}
 
 	// saves the current widget values to the "preferences.txt" file

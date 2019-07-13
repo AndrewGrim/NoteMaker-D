@@ -25,6 +25,7 @@ class Application : TkdApplication {
 	Frame side;
 	NoteBook noteBookSide;
 	PanedWindow sideBySide;
+	Text lineNumbersTextWidget;
 
 	// initialize user interface
 	override public void initInterface() {
@@ -45,6 +46,17 @@ class Application : TkdApplication {
 		this.main = new Frame(sideBySide);
 			noteBook = new NoteBook(main);
 				auto mainPane = gui.createMainPane();
+			auto noteBookLines = new NoteBook(main);
+				auto linesPane = new Frame();
+
+			// creates the text widget containing the line numbers
+			this.lineNumbersTextWidget = new Text(linesPane)
+				.configTag("alignCenter", "-justify center")
+				.pack(0, 0, GeometrySide.left, GeometryFill.y, AnchorPosition.north, false);
+
+			noteBookLines
+				.addTab("#", linesPane)
+				.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, false);
 
 			noteBook
 				.addTab("Main File", mainPane)
@@ -66,8 +78,8 @@ class Application : TkdApplication {
 		secondWidget = true;
 
 		// makes the code in other files usable in "main.d"
-		io = new InputOutput(root);
-		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.textWidgetArraySide);
+		io = new InputOutput(root, lineNumbersTextWidget);
+		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.textWidgetArraySide, lineNumbersTextWidget);
 		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
 		syntax = new Syntax();
 
@@ -116,8 +128,20 @@ class Application : TkdApplication {
 		root.bind("<Control-q>", &exitApplication); // Quit
 
 		// virtual event functions
-		root.bind("<<Modified>>", &saveOnModified);
+		//root.bind("<<Modified>>", &saveOnModified); // FIXME renable once other shit is finished
 		root.bind("<<ResetTitle>>", &resetTitle);
+		noteBook.bind("<<NotebookTabChanged>>", &lineNumbersUpdate);
+		root.bind("<<Modified>>", &updateLines);
+
+		// FIXME gets triggered when changing tabs since the the yview is different than it was on the last tab, maybe use Associative Array
+		double lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
+		root.setIdleCommand(delegate(CommandArgs args){
+			if (tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0] != lastYViewPos) {
+				lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
+				lineNumbersTextWidget.setYView(lastYViewPos);
+			}
+			this.mainWindow.setIdleCommand(args.callback, 10);
+		});
 
 		// checks if the preferences file exists if false creates one and tells you about it
 		if (!gui.preferences.preferencesFileExists) {
@@ -127,21 +151,60 @@ class Application : TkdApplication {
 		}
 	}
 
+	public void updateLines(CommandArgs args) {
+		// TODO create three methods that do stuff on <<modified>> event determined by args callback or something
+		// one for save on modified
+		// two for updating lines
+		// three for checking wheter file has been modified but not saved
+		foreach (textWidget; tabs.getTextWidgetArray()) {
+			textWidget.setModified(false);
+		}
+		lineNumbersUpdate(args); // TODO check for change in number of lines and only then call the function
+	}
+
+	public void lineNumbersUpdate(CommandArgs arg) {
+		string numOfLines = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0];
+
+		string lineNumbers;
+		if (numOfLines == "0") {
+			lineNumbers = "1";
+		} else {
+			for (int i = 1; i < numOfLines.to!int; i++) {
+				if (i == (numOfLines.to!int - 1)) {
+					lineNumbers ~= i.to!string;
+				} else {
+					lineNumbers ~= i.to!string ~ "\n";
+				}
+			}
+		}
+
+		lineNumbersTextWidget.setReadOnly(false);
+		if ((numOfLines.length).to!int < 3) {
+			lineNumbersTextWidget.setWidth(3);
+		} else {
+			lineNumbersTextWidget.setWidth((numOfLines.length).to!int);
+		}
+		lineNumbersTextWidget.setFont(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getFont());
+		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
+		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
+		lineNumbersTextWidget.clear();
+		lineNumbersTextWidget.appendText(lineNumbers, "alignCenter");
+		lineNumbersTextWidget.setReadOnly();
+		lineNumbersTextWidget.setYView(tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0]);
+	}
+
 	// resets the title to the name of the program
 	public void changeTitle(CommandArgs args) {
 		root.setTitle("Note Maker");
 	}
 
+	// resets the title after 3seconds once a <<ResetTitle>> event is detected
+	public void resetTitle(CommandArgs args) {
+		root.after(&changeTitle, 3000);
+	}
+
 	// opens and closes the side by side mode
 	public void sideBySideMode(CommandArgs args) {
-		// TODO test stuff for line numbers
-		/*
-		string text;
-		for (int i = 1; i < 201; i++) {
-			text ~= i.to!string ~ "\n";
-		}
-		gui.lineNumber.setText(text);
-		*/
 		if (sideStatus % 2 == 0 || sideStatus == 0) {
 			sideBySide
 				.addPane(side)
@@ -300,12 +363,7 @@ class Application : TkdApplication {
 		}
 	}
 
-	// resets the title after 3seconds once a <<ResetTitle>> event is detected
-	public void resetTitle(CommandArgs args) {
-		root.setIdleCommand(&changeTitle, 3000);
-	}
-
-	// quits the application.
+	// quits the application
 	public void exitApplication(CommandArgs args) {
 		this.exit();
 		writeln("Application closed!");
@@ -314,6 +372,6 @@ class Application : TkdApplication {
 
 // runs the application.
 void main(string[] args) {
-	auto app = new Application();                      
+	auto app = new Application();             
 	app.run();                                  
 }

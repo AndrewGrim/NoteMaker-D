@@ -95,7 +95,11 @@ class Syntax {
 		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter"];
 		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment"];
 
-		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
+		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) { // TODO ??change to global variables to reduce all the arguments in methods?
+			// check for functions // TODO highlight function names 
+			//if (checkLineForToken(textWidget, line, "(") != -1) {
+			//	writeln("parenthases detected on line: ", line);
+			//}
 			// check for literal string
 			if (checkLineForToken(textWidget, line, '"') != -1) {
 				startIndex = checkLineForToken(textWidget, line, '"');
@@ -287,3 +291,4 @@ class Syntax {
 		return line.to!string ~ ".";
 	}	
 }
+
