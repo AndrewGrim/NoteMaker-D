@@ -63,12 +63,21 @@ class Tabs {
 					.setInsertColor(textMain.getInsertColor())
 					.setSelectionForegroundColor(textMain.getSelectionForegroundColor())
 					.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor())
+					.setWrapMode("none")
+					.setWidth(1) // to prevent scrollbars from dissappearing
+					.setHeight(1)
 					.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 
 				// creates the vertical "yscrollWidget" for use with "textWidget"
 				auto yscrollWidget = new YScrollBar(container)
 					.attachWidget(textWidget)
 					.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
+
+				auto xscrollWidget = new XScrollBar(frameMain)
+						.attachWidget(textWidget)
+						.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+
+					textWidget.attachXScrollBar(xscrollWidget);
 
 				textWidget.attachYScrollBar(yscrollWidget);
 

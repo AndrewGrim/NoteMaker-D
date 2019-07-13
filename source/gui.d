@@ -14,7 +14,6 @@ class Gui {
 
 	// variables
 	Window root;
-	Label lineNumber;
 	Text textMain;
 	Text[] textWidgetArray;
 	Text[] textWidgetArraySide;
@@ -64,16 +63,12 @@ class Gui {
 						writeln("Failed to read preferences file! Preferences file created!");
 					}
 
-					// gui.lineNumber.setText("\n2"); // TODO add line numbers into the editor somehow
-					this.lineNumber = new Label(container, "1")
-						.setFont("Arial 12")
-						.setForegroundColor("black")
-						.setBackgroundColor("yellow");
-						//.pack(0, 0, GeometrySide.left, GeometryFill.y, AnchorPosition.north, false);
-
 					// creates the "textMain" widget and sets the options if the "preferences.txt" file exists
 					this.textMain = new Text(container)
 						.focus()
+						.setWidth(1) // to prevent scrollbars from dissappearing
+						.setHeight(1)
+						.setWrapMode("none")
 						.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 						// tries to read in the values from file
 						try {
@@ -96,10 +91,14 @@ class Gui {
 						.attachWidget(textMain)
 						.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
-					this.textMain.attachYScrollBar(yscroll);
-					root.generateEvent("<<TextWidgetCreated>>");
+					textMain.attachYScrollBar(yscroll);
 
-					//this.textMain.embedWidget(0, 0, lineNumber); // TODO deactivated embedded widget
+					auto xscroll = new XScrollBar(frameMain)
+						.attachWidget(textMain)
+						.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+
+					textMain.attachXScrollBar(xscroll);
+					root.generateEvent("<<TextWidgetCreated>>");
 
 		return frameMain;
 	}
@@ -124,6 +123,9 @@ class Gui {
 						.setInsertColor(textMain.getInsertColor())
 						.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor())
 						.setSelectionForegroundColor(textMain.getSelectionForegroundColor())
+						.setWrapMode("none")
+						.setWidth(1) // to prevent scrollbars from dissappearing
+						.setHeight(1)
 						.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 					
 					// adds the text widget to the array to keep track of it
@@ -135,6 +137,12 @@ class Gui {
 						.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
 					this.textSide.attachYScrollBar(yscrollSide);
+
+					auto xscrollSide = new XScrollBar(frameSide)
+						.attachWidget(textSide)
+						.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+
+					textSide.attachXScrollBar(xscrollSide);
 					//root.generateEvent("<<TextWidgetCreated>>"); // FIXME maybe remove possibly along with sidebyside
 
 		return frameSide;
