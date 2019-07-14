@@ -22,7 +22,6 @@ class Syntax {
 		highlightOnLoad = state;
 	}
 
-
 	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, bool manual = false) {
 		string[] supportedLanguages = [".d", ".c", ".cpp", ".h", ".hpp"];
 		if (supportedLanguages.canFind((noteBook.getTabText(noteBook.getCurrentTabId())).extension)
@@ -96,18 +95,19 @@ class Syntax {
 		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function"];
 		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function"];
 
+		// TODO refactor the if blocks into separate functions so its not cancer on your eyes
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
 			// check for functions
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
 				string[] whitespace = textWidget.findAllInLine(" ", line);
 				string[] tab = textWidget.findAllInLine("\t", line);
-				string[] parenthases = textWidget.findAllInLine("(", line);
+				string[] parentheses = textWidget.findAllInLine("(", line);
 				string[] dot = textWidget.findAllInLine(".", line);
 
 				int lastWhitespace = 0;
 				int lastTab = 0;
-				int lastParenthases = 0;
+				int lastParentheses = 0;
 				int lastDot = 0;
 				foreach (item; whitespace) {
 					if (item.split(".")[1].to!int > lastWhitespace && item.split(".")[1].to!int < stopIndex) {
@@ -119,9 +119,9 @@ class Syntax {
 						lastTab = item.split(".")[1].to!int;
 					}
 				}
-				foreach (item; parenthases) {
-					if (item.split(".")[1].to!int > lastParenthases && item.split(".")[1].to!int < stopIndex) {
-						lastParenthases = item.split(".")[1].to!int;
+				foreach (item; parentheses) {
+					if (item.split(".")[1].to!int > lastParentheses && item.split(".")[1].to!int < stopIndex) {
+						lastParentheses = item.split(".")[1].to!int;
 					}
 				}
 				foreach (item; dot) {
@@ -129,9 +129,50 @@ class Syntax {
 						lastDot = item.split(".")[1].to!int;
 					}
 				}
-				startIndex = max(lastWhitespace, lastTab, lastParenthases, lastDot);
+				startIndex = max(lastWhitespace, lastTab, lastParentheses, lastDot) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
 				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				// TODO now repeat for all occurances of parenthases in the line
+				// probably highligh parameters in the same block
+				stopIndex += 1; // add 1 to step over the opening parentheses since we dont highlight it with the function name
+				int numberOfParentheses = numberOfParenthesesInLine(textWidget, line);
+				for (int i = 1; i < numberOfParentheses; i++) {
+					if (line == 28) writeln(stopIndex);
+					stopIndex = checkLineForNextToken(textWidget, line, stopIndex, "(") + stopIndex;
+					if (line == 28) writeln(stopIndex);
+					// TODO we may want to keep this but change it for parentheses
+					//fromStartToClose = checkLineForNextToken(textWidget, line, startIndex + 1, '"') + 2;
+					whitespace = textWidget.findAllInLine(" ", line);
+					tab = textWidget.findAllInLine("\t", line);
+					parentheses = textWidget.findAllInLine("(", line);
+					dot = textWidget.findAllInLine(".", line);
+
+					lastWhitespace = 0;
+					lastTab = 0;
+					lastParentheses = 0;
+					lastDot = 0;
+					foreach (item; whitespace) {
+						if (item.split(".")[1].to!int > lastWhitespace && item.split(".")[1].to!int < stopIndex) {
+							lastWhitespace = item.split(".")[1].to!int;
+						}
+					}
+					foreach (item; tab) {
+						if (item.split(".")[1].to!int > lastTab && item.split(".")[1].to!int < stopIndex) {
+							lastTab = item.split(".")[1].to!int;
+						}
+					}
+					foreach (item; parentheses) {
+						if (item.split(".")[1].to!int > lastParentheses && item.split(".")[1].to!int < stopIndex) {
+							lastParentheses = item.split(".")[1].to!int;
+						}
+					}
+					foreach (item; dot) {
+						if (item.split(".")[1].to!int > lastDot && item.split(".")[1].to!int < stopIndex) {
+							lastDot = item.split(".")[1].to!int;
+						}
+					}
+					startIndex = max(lastWhitespace, lastTab, lastParentheses, lastDot) + 1;
+					textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+					stopIndex += 1;	
+				}
 			}
 			// check for literal string
 			if (checkLineForToken(textWidget, line, '"') != -1) {
@@ -294,6 +335,10 @@ class Syntax {
 
 	public int numberOfEscapesInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("\\")).to!int;
+	}
+
+	public int numberOfParenthesesInLine(Text textWidget, int line) {
+		return (textWidget.getLine(line).count("(")).to!int;
 	}
 
 	public string startIndexFn(int line, int startIndex) {

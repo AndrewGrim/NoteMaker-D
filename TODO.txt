@@ -20,7 +20,7 @@ activate event for sidebyside??
 *** priority ***
 
 3. better highlights
-	highlight class names and function names (first function name in line already works!)
+	highlight class names and function names (done... but doesnt include .split though it works on split())
 	highlight arrays
 	parameters
 4. fix sidebyside or remove it but introduce a different feature using paned window

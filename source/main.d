@@ -116,7 +116,7 @@ class Application : TkdApplication {
 		root.bind("<Control-Alt-f>", &openFileInNewTab); // Open File In A New Tab
 		root.bind("<Control-s>", &saveFile); // Save
 		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
-		root.bind("<Control-t>", &tabs.createNewTab); // New Tab
+		root.bind("<Control-t>", &tabs.createNewTab); // New Tab // FIXME move the line up?? might need to change the keybind to something that doesnt interfer
 		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
 		root.bind("<Control-KeyPress-1>", &tabs.nextTab); // Next Tab
 		root.bind("<Control-KeyPress-2>", &tabs.previousTab); // Previous Tab
@@ -177,6 +177,7 @@ class Application : TkdApplication {
 				}
 			}
 		}
+		lineNumbers ~= "\n" ~ "###";
 
 		lineNumbersTextWidget.setReadOnly(false);
 		if ((numOfLines.length).to!int < 3) {

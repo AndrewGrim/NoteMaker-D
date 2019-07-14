@@ -89,6 +89,8 @@ class InputOutput {
 					lineNumbers ~= i.to!string ~ "\n";
 				}
 			}
+			lineNumbers ~= "###";
+			
 			lineNumbersTextWidget.setReadOnly(false);
 			if ((numOfLines.length).to!int < 3) {
 				lineNumbersTextWidget.setWidth(3);
