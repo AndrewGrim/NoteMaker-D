@@ -11,10 +11,10 @@ class Indentation {
 		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 		string insertLine = ((textWidget.getInsertCursorIndex().split("."))[0]) ~ ".0";
 
-		string selectionRange = textWidget.getTagRanges("sel");
-		if (selectionRange != "") {
-			string start = (selectionRange.split())[0];
-			string end = (selectionRange.split())[1];
+		string[] selectionRange = textWidget.getTagRanges("sel");
+		if (!selectionRange.empty) {
+			string start = selectionRange[0];
+			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
 				int startLine = start.split(".")[0].to!int;
 				int endLine = end.split(".")[0].to!int;
@@ -43,10 +43,10 @@ class Indentation {
 			writeln("tab character not found in line!");
 		}
 
-		string selectionRange = textWidget.getTagRanges("sel");
-		if (selectionRange != "") {
-			string start = (selectionRange.split())[0];
-			string end = (selectionRange.split())[1];
+		string[] selectionRange = textWidget.getTagRanges("sel");
+		if (!selectionRange.empty) {
+			string start = selectionRange[0];
+			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
 				int startLine = start.split(".")[0].to!int;
 				int endLine = end.split(".")[0].to!int;

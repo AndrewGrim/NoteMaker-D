@@ -13,41 +13,22 @@ class Tabs {
 	//variables
 	Window root;
 	NoteBook noteBook;
-	NoteBook noteBookSide;
+	NoteBook noteBookTerminal;
 	Text[] textWidgetArray;
-	Text[] textWidgetArraySide;
 	int[] lastClosedTab;
-	int[] lastClosedTabSide;
-	Frame[] frameWidgetArray;
-	Frame[] frameWidgetArraySide;
-	bool isSideSelected;
 
 	//constructor
-	this(Window root, NoteBook noteBook, NoteBook noteBookSide, Text[] textWidgetArray, Text[] textWidgetArraySide,
-		Frame[] frameWidgetArray, Frame[] frameWidgetArraySide) {
+	this(Window root, NoteBook noteBook, NoteBook noteBookTerminal, Text[] textWidgetArray) {
 		this.root = root;
 		this.noteBook = noteBook;
-		this.noteBookSide = noteBookSide;
+		this.noteBookTerminal = noteBookTerminal;
 		this.textWidgetArray = textWidgetArray;
-		this.textWidgetArraySide = textWidgetArraySide;
-		this.frameWidgetArray = frameWidgetArray;
-		this.frameWidgetArraySide = frameWidgetArraySide;
 	}
 
 	// creates a new tab and adds it to the "noteBook"
 	public void createNewTab(CommandArgs args) {
-
-		checkCurrentNoteBook();
-
 		// the main frame that gets returned to be used by the "noteBook"
 		auto frameMain = new Frame(root);
-
-		if (isSideSelected) {
-			frameWidgetArraySide ~= frameMain;	
-		} else {
-			frameWidgetArray ~= frameMain;
-		}
-			
 
 			// the frame containing all the widgets
 			auto container = new Frame(frameMain)
@@ -73,51 +54,22 @@ class Tabs {
 					.attachWidget(textWidget)
 					.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
-				auto xscrollWidget = new XScrollBar(frameMain)
-						.attachWidget(textWidget)
-						.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
-
-					textWidget.attachXScrollBar(xscrollWidget);
-
 				textWidget.attachYScrollBar(yscrollWidget);
 
-		textWidget.focus();
-		if (isSideSelected) {
-			noteBookSide.addTab("New File", frameMain);
-			noteBookSide.selectTab(noteBook.getNumberOfTabs() - 1);
-		} else {
-			noteBook.addTab("New File", frameMain);
-			noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
-		}
+				auto xscrollWidget = new XScrollBar(frameMain)
+					.attachWidget(textWidget)
+					.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+
+				textWidget.attachXScrollBar(xscrollWidget);
+
+		noteBook.addTab("New File", frameMain);
+		noteBook.selectTab(noteBook.getNumberOfTabs() - 1);
+		
 		textWidget.focus();
 
-		if (isSideSelected) {
-			textWidgetArraySide ~= textWidget;
-		} else {
-			textWidgetArray ~= textWidget;
-		}
-		isSideSelected = false;
+		textWidgetArray ~= textWidget;
+		
 		root.generateEvent("<<TextWidgetCreated>>");
-	}
-
-	// checks which notebook is currently selected by checking if one of its frames has the "hover" state
-	public string checkCurrentNoteBook() {
-		if (!isSideSelected) {
-			foreach (frame; frameWidgetArraySide) {
-				if (frame.inState(["hover"])) {
-					isSideSelected = true;
-					break;
-				} 
-			}
-		} else {
-			isSideSelected = false;
-		}
-
-		if (isSideSelected) {
-			return "side";
-		} else {
-			return "main";
-		}
 	}
 
 	// updates the array to include all the currently existing Text widgets
@@ -125,130 +77,59 @@ class Tabs {
 		return textWidgetArray;
 	}
 
-	// updates the array to include all the currently existing Text widgets
-	public Text[] getTextWidgetArraySide() {
-		return textWidgetArraySide;
-	}
-
-	// updates the array to include all the currently existing Frame widgets
-	public Frame[] getFrameArray() {
-		return frameWidgetArray;
-	}
-
-	// updates the array to include all the currently existing Frame widgets
-	public Frame[] getFrameArraySide() {
-		return frameWidgetArraySide;
-	}
-
 	// closes the tab by hiding it to keep the index consistent
 	public void closeTab(CommandArgs args) {
-		// sometimes when you close a tab in side, the focus is shifted over to main // FIXME sidebyside not working great
-		checkCurrentNoteBook();
-
-		if (isSideSelected) {
-			lastClosedTabSide ~= noteBookSide.getCurrentTabId();
-			noteBookSide.hideTab("current");
-			textWidgetArraySide[noteBookSide.getCurrentTabId()].focus();
-		} else {
-			lastClosedTab ~= noteBook.getCurrentTabId();
-			noteBook.hideTab("current");
-			textWidgetArray[noteBook.getCurrentTabId()].focus();
-		}
-		isSideSelected = false;
+		lastClosedTab ~= noteBook.getCurrentTabId();
+		noteBook.hideTab("current");
+		textWidgetArray[noteBook.getCurrentTabId()].focus();
 	}
 
 	// selects the next tab
 	public void nextTab(CommandArgs args) {
-		checkCurrentNoteBook();
-
 		int iteration = 2;
 
-		if (isSideSelected) {
-			if (noteBookSide.getTabState(noteBookSide.getCurrentTabId() + 1) == "hidden") {
-				while (true) {
-					if (noteBookSide.getTabState(noteBookSide.getCurrentTabId() + iteration) == "hidden") {
-						writeln("Tab still hidden!");
-						iteration++;
-					} else {
-						writeln("Normal tab!");
-						break;
-					}
+		if (noteBook.getTabState(noteBook.getCurrentTabId() + 1) == "hidden") {
+			while (true) {
+				if (noteBook.getTabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
+					writeln("Tab still hidden!");
+					iteration++;
+				} else {
+					writeln("Normal tab!");
+					break;
 				}
-				noteBookSide.selectTab(noteBookSide.getCurrentTabId() + iteration);
-				textWidgetArraySide[noteBook.getCurrentTabId()].focus();
-			} else {
-				noteBookSide.selectTab(noteBookSide.getCurrentTabId() + 1);
-				textWidgetArraySide[noteBookSide.getCurrentTabId()].focus();
 			}
+			noteBook.selectTab(noteBook.getCurrentTabId() + iteration);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		} else {
-			if (noteBook.getTabState(noteBook.getCurrentTabId() + 1) == "hidden") {
-				while (true) {
-					if (noteBook.getTabState(noteBook.getCurrentTabId() + iteration) == "hidden") {
-						writeln("Tab still hidden!");
-						iteration++;
-					} else {
-						writeln("Normal tab!");
-						break;
-					}
-				}
-				noteBook.selectTab(noteBook.getCurrentTabId() + iteration);
-				textWidgetArray[noteBook.getCurrentTabId()].focus();
-			} else {
-				noteBook.selectTab(noteBook.getCurrentTabId() + 1);
-				textWidgetArray[noteBook.getCurrentTabId()].focus();
-			}
+			noteBook.selectTab(noteBook.getCurrentTabId() + 1);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		}
-		isSideSelected = false;
 	}
 
 	// selects the previous tab
 	public void previousTab(CommandArgs args) {
-		checkCurrentNoteBook();
-
 		int iteration = 2;
 
-		if (isSideSelected) {
-			if (noteBookSide.getTabState(noteBookSide.getCurrentTabId() - 1) == "hidden") {
-				while (true) {
-					if (noteBookSide.getTabState(noteBookSide.getCurrentTabId() - iteration) == "hidden") {
-						writeln("Tab still hidden!");
-						iteration++;
-					} else {
-						writeln("Normal tab!");
-						break;
-					}
+		if (noteBook.getTabState(noteBook.getCurrentTabId() - 1) == "hidden") {
+			while (true) {
+				if (noteBook.getTabState(noteBook.getCurrentTabId() - iteration) == "hidden") {
+					writeln("Tab still hidden!");
+					iteration++;
+				} else {
+					writeln("Normal tab!");
+					break;
 				}
-				noteBookSide.selectTab(noteBookSide.getCurrentTabId() - iteration);
-				textWidgetArraySide[noteBook.getCurrentTabId()].focus();
-			} else {
-				noteBookSide.selectTab(noteBookSide.getCurrentTabId() - 1);
-				textWidgetArraySide[noteBookSide.getCurrentTabId()].focus();
 			}
+			noteBook.selectTab(noteBook.getCurrentTabId() - iteration);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		} else {
-			if (noteBook.getTabState(noteBook.getCurrentTabId() - 1) == "hidden") {
-				while (true) {
-					if (noteBook.getTabState(noteBook.getCurrentTabId() - iteration) == "hidden") {
-						writeln("Tab still hidden!");
-						iteration++;
-					} else {
-						writeln("Normal tab!");
-						break;
-					}
-				}
-				noteBook.selectTab(noteBook.getCurrentTabId() - iteration);
-				textWidgetArray[noteBook.getCurrentTabId()].focus();
-			} else {
-				noteBook.selectTab(noteBook.getCurrentTabId() - 1);
-				textWidgetArray[noteBook.getCurrentTabId()].focus();
-			}
+			noteBook.selectTab(noteBook.getCurrentTabId() - 1);
+			textWidgetArray[noteBook.getCurrentTabId()].focus();
 		}
-		isSideSelected = false;
 	}
 
 	// reopens the last closed tab
 	public void reopenClosedTab(CommandArgs args) {
-		checkCurrentNoteBook();
-
 		for (int index = 1; index <= lastClosedTab.length; index++) { 
 			if (noteBook.getTabState(lastClosedTab[$ - index]) == "hidden") {
 				noteBook.selectTab(lastClosedTab[$ - index]);
@@ -256,6 +137,5 @@ class Tabs {
 				break;
 			} 
 		}
-		isSideSelected = false;
 	}
 }

@@ -16,10 +16,8 @@ class Gui {
 	Window root;
 	Text textMain;
 	Text[] textWidgetArray;
-	Text[] textWidgetArraySide;
-	Text textSide;
-	Frame[] frameWidgetArray;
-	Frame[] frameWidgetArraySide;
+	Text terminalOutput;
+	Entry terminalInput;
 	readpreferences.Preferences preferences;
 
 	// constructor
@@ -33,15 +31,12 @@ class Gui {
 		// the main frame that gets returned to be used by the "noteBook"
 		auto frameMain = new Frame();
 
-		frameWidgetArray ~= frameMain;
-
 				// the frame containing all the widgets
 				auto container = new Frame(frameMain)
 					.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 					// tries to read options from the "preferences.txt" file, if it fails the file is created with default values
 					try {
-
 						preferences = readpreferences.readPreferencesFile();
 
 					} catch (ErrnoException error) {
@@ -104,47 +99,41 @@ class Gui {
 	}
 
 	// creates the main pane for the "noteBook"
-	public Frame createSidePane() {
+	public Frame createTerminalPane() {
 		
 		// the main frame that gets returned to be used by the "noteBook"
-		auto frameSide = new Frame();
-
-		frameWidgetArraySide ~= frameSide;
+		auto frameTerminal = new Frame();
 
 				// the frame containing all the widgets
-				auto containerSide = new Frame(frameSide)
+				auto containerTerminalOutput = new Frame(frameTerminal)
 					.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
-
-					this.textSide = new Text(containerSide)
+					this.terminalOutput = new Text(containerTerminalOutput)
 						.setFont(textMain.getFont())
 						.setForegroundColor(textMain.getForegroundColor())
 						.setBackgroundColor(textMain.getBackgroundColor())
 						.setInsertColor(textMain.getInsertColor())
 						.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor())
 						.setSelectionForegroundColor(textMain.getSelectionForegroundColor())
-						.setWrapMode("none")
+						//.setWrapMode("none") // default is word
 						.setWidth(1) // to prevent scrollbars from dissappearing
 						.setHeight(1)
+						.appendText("this is the terminal!")
 						.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 					
-					// adds the text widget to the array to keep track of it
-					textWidgetArraySide ~= textSide;
 
-					// creates the vertical "yscroll" widget for use with "textMain"
-					auto yscrollSide = new YScrollBar(containerSide)
-						.attachWidget(textSide)
+					auto yscrollTerminal = new YScrollBar(containerTerminalOutput)
+						.attachWidget(terminalOutput)
 						.pack(0, 0, GeometrySide.right, GeometryFill.both, AnchorPosition.center, false);
 
-					this.textSide.attachYScrollBar(yscrollSide);
+					this.terminalOutput.attachYScrollBar(yscrollTerminal);
 
-					auto xscrollSide = new XScrollBar(frameSide)
-						.attachWidget(textSide)
-						.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+				auto containerTerminalInput = new Frame(frameTerminal)
+					.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
 
-					textSide.attachXScrollBar(xscrollSide);
-					//root.generateEvent("<<TextWidgetCreated>>"); // FIXME maybe remove possibly along with sidebyside
+					this.terminalInput = new Entry(containerTerminalInput)
+						.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, false);
 
-		return frameSide;
+		return frameTerminal;
 	}
 }

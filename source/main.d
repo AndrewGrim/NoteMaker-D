@@ -23,7 +23,7 @@ class Application : TkdApplication {
 	int sideStatus;
 	Frame main;
 	Frame side;
-	NoteBook noteBookSide;
+	NoteBook noteBookTerminal;
 	PanedWindow sideBySide;
 	Text lineNumbersTextWidget;
 
@@ -63,10 +63,10 @@ class Application : TkdApplication {
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 		this.side = new Frame(sideBySide);
-			noteBookSide = new NoteBook(side);
-				auto sidePane = gui.createSidePane();
-			noteBookSide
-				.addTab("Side File", sidePane)
+			noteBookTerminal = new NoteBook(side);
+				auto terminalPane = gui.createTerminalPane();
+			noteBookTerminal
+				.addTab("Terminal", terminalPane)
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 		
 		this.sideBySide
@@ -79,8 +79,8 @@ class Application : TkdApplication {
 
 		// makes the code in other files usable in "main.d"
 		io = new InputOutput(root, lineNumbersTextWidget);
-		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.textWidgetArraySide, lineNumbersTextWidget);
-		tabs = new Tabs(root, noteBook, noteBookSide, gui.textWidgetArray, gui.textWidgetArraySide, gui.frameWidgetArray, gui.frameWidgetArraySide);
+		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.terminalOutput, lineNumbersTextWidget);
+		tabs = new Tabs(root, noteBook, noteBookTerminal, gui.textWidgetArray);
 		syntax = new Syntax();
 
 		// create the menu bar at the top
@@ -209,7 +209,7 @@ class Application : TkdApplication {
 		if (sideStatus % 2 == 0 || sideStatus == 0) {
 			sideBySide
 				.addPane(side)
-				.setPaneWeight(1, 20);
+				.setPaneWeight(1, 9);
 		} else {
 			sideBySide.removePane(1);
 		}
@@ -221,8 +221,6 @@ class Application : TkdApplication {
 		gui.textMain.bind("<Control-`>", &indent);
 		gui.textMain.bind("<Shift-Tab>", &unindent);
 		if (!applicationInitialization) {
-			writeln("if");
-			writeln(tabs.getTextWidgetArray());
 			foreach (widget; tabs.getTextWidgetArray()) {
 				widget.bind("<Control-`>", &indent);
 				widget.bind("<Shift-Tab>", &unindent);
@@ -232,70 +230,40 @@ class Application : TkdApplication {
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			indentation.Indentation.indent(noteBookSide, tabs.getTextWidgetArraySide());
-		} else {
-			indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
-		}
+		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
 	}
 
 	// unindents the text, works with both single lines and selection
 	public void unindent(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			indentation.Indentation.unindent(noteBookSide, tabs.getTextWidgetArraySide());
-		} else {
-			indentation.Indentation.unindent(noteBook, tabs.getTextWidgetArray());
-		}
+		indentation.Indentation.unindent(noteBook, tabs.getTextWidgetArray());
 	}
 
 	// opens a file according to the dialog
 	public void openFile(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			io.openOpenFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
-			automaticHighlight(args);
-			syntax.setHighlightOnLoad(true);
-		} else {
-			io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
-			automaticHighlight(args);
-			syntax.setHighlightOnLoad(true);
-		}
+		io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
+		automaticHighlight(args);
+		syntax.setHighlightOnLoad(true);
 	}
 
 	// opens a file in a new tab
 	public void openFileInNewTab(CommandArgs args) {
 		tabs.createNewTab(args);
-		if (tabs.checkCurrentNoteBook == "side") {
-			io.openOpenFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
-			automaticHighlight(args);
-			syntax.setHighlightOnLoad(true);
-		} else {
-			io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
-			automaticHighlight(args);
-			syntax.setHighlightOnLoad(true);
-		}
+		io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
+		automaticHighlight(args);
+		syntax.setHighlightOnLoad(true);
 	}
 
 	// saves the file sans dialog using the path from opening or saving the file previously
 	// opens the save dialog if there isnt a path associated with the file
 	public void saveFile(CommandArgs args) { 
-		if (tabs.checkCurrentNoteBook == "side") {
-			io.saveFile(args, noteBookSide, tabs.getTextWidgetArraySide());
-			automaticHighlight(args);
-		} else {
-			io.saveFile(args, noteBook, tabs.getTextWidgetArray());
-			automaticHighlight(args);
-		}
+		io.saveFile(args, noteBook, tabs.getTextWidgetArray());
+		automaticHighlight(args);
 	}
 
 	// saves a file according to the dialog
 	public void saveFileAs(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			io.openSaveFileDialog(args, noteBookSide, tabs.getTextWidgetArraySide());
-			automaticHighlight(args);
-		} else {
-			io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
-			automaticHighlight(args);
-		}
+		io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
+		automaticHighlight(args);
 	}
 
 	// saves the file every time the text widget's contents are modified if the checkbutton is checked
@@ -303,65 +271,38 @@ class Application : TkdApplication {
 	// when a file is being opened and the syntax is being highlighted or
 	// when a file is being opend
 	public void saveOnModified(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			if (pref.getSaveOnModified()) {
-				foreach (textWidget; tabs.getTextWidgetArraySide()) {
-					if (textWidget.getModified()) { 
-						if (!io.getOpeningFile && syntax.highlightOnLoad) {
-							io.setOpeningFile(false);
-							syntax.setHighlightOnLoad(false);
-						} else if (!io.getOpeningFile) {
-							io.setOpeningFile(false);
-						} else {
-							io.saveFile(args, noteBookSide, tabs.getTextWidgetArraySide());
-						}
+		if (pref.getSaveOnModified()) {
+			foreach (textWidget; tabs.getTextWidgetArray()) {
+				if (textWidget.getModified()) { 
+					if (!io.getOpeningFile && syntax.highlightOnLoad) {
+						io.setOpeningFile(false); // WTF this seems dumb
+						syntax.setHighlightOnLoad(false);
+					} else if (!io.getOpeningFile) {
+						io.setOpeningFile(false); // WTF this seems dumb
+					} else {
+						io.saveFile(args, noteBook, tabs.getTextWidgetArray());
+						// FIXME save on modified only works once you load the file doesnt work when creating a new file
+					}
 
-						textWidget.setModified(false);
-					} 
-				}
+					textWidget.setModified(false);
+				} 
 			}
-		} else {
-			if (pref.getSaveOnModified()) {
-				foreach (textWidget; tabs.getTextWidgetArray()) {
-					if (textWidget.getModified()) { 
-						if (!io.getOpeningFile && syntax.highlightOnLoad) {
-							io.setOpeningFile(false); // WTF this seems dumb
-							syntax.setHighlightOnLoad(false);
-						} else if (!io.getOpeningFile) {
-							io.setOpeningFile(false); // WTF this seems dumb
-						} else {
-							io.saveFile(args, noteBook, tabs.getTextWidgetArray());
-							// FIXME save on modified only works once you load the file doesnt work when creating a new file
-						}
-
-						textWidget.setModified(false);
-					} 
-				}
-			}
-		}	
+		}
 	}
 
 	// opens the preferences window
 	public void openPreferences(CommandArgs args) {	
-		pref.openPreferencesWindow(args, tabs.getTextWidgetArray(), tabs.getTextWidgetArraySide());
+		pref.openPreferencesWindow(args, tabs.getTextWidgetArray());
 	}
 
 	// automatically highlights the defined syntax
 	public void automaticHighlight(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			syntax.highlight(args, noteBookSide, tabs.getTextWidgetArraySide());
-		} else {
-			syntax.highlight(args, noteBook, tabs.getTextWidgetArray());
-		}
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray());
 	}
 
 	// manually highlights the defined syntax bypassing the supported extensions check, results will vary
 	public void manualHighlight(CommandArgs args) {
-		if (tabs.checkCurrentNoteBook == "side") {
-			syntax.highlight(args, noteBookSide, tabs.getTextWidgetArraySide(), true);
-		} else {
-			syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), true);
-		}
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), true);
 	}
 
 	// quits the application

@@ -27,25 +27,25 @@ class PreferencesWindow {
 	Button changeSelectionForegroundColor;
 	Button changeSelectionBackgroundColor;
 	Text[] textWidgetArray;
-	Text[] textWidgetArraySide;
 	CheckButton setSaveOnModified;
 	Text lineNumbersTextWidget;
+	Text terminalOutput;
 
 
 	// constructor
 	this(Window root, Text textMain, readpreferences.Preferences preferences,
-		Text[] textWidgetArray, Text[] textWidgetArraySide, Text lineNumbersTextWidget) {
+		Text[] textWidgetArray, Text terminalOutput, Text lineNumbersTextWidget) {
 
 		this.root = root;
 		this.textMain = textMain;
 		this.preferences = preferences;
 		this.textWidgetArray = textWidgetArray;
-		this.textWidgetArraySide = textWidgetArraySide;
+		this.terminalOutput = terminalOutput;
 		this.lineNumbersTextWidget = lineNumbersTextWidget;
 	}
 
 	// creates the preferences window and displays its contents
-	public void openPreferencesWindow(CommandArgs args, Text[] getTextWidgetArray, Text[] getTextWidgetArraySide) {
+	public void openPreferencesWindow(CommandArgs args, Text[] getTextWidgetArray) {
 
 		// sets up the window relative to root
 		this.preferencesWindow = new Window("Preferences", false);
@@ -122,8 +122,7 @@ class PreferencesWindow {
 		this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences
 		this.preferencesWindow.bind("<Return>", &this.pressButton); // Clicks Button
 
-		textWidgetArray = getTextWidgetArray;
-		textWidgetArraySide = getTextWidgetArraySide;
+		textWidgetArray = getTextWidgetArray; // updates the textWidgetArray
 	}
 
 	public bool getSaveOnModified() {
@@ -138,10 +137,7 @@ class PreferencesWindow {
 					widget.setFont(args.dialog.font);
 				}
 
-				foreach (widget; textWidgetArraySide) {
-					widget.setFont(args.dialog.font);
-				}
-
+				terminalOutput.setFont(args.dialog.font);
 				lineNumbersTextWidget.setFont(args.dialog.font);
 			})
 			.show();
@@ -159,10 +155,7 @@ class PreferencesWindow {
 			widget.setForegroundColor(dialog.getResult);
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setForegroundColor(dialog.getResult);
-		}
-
+		terminalOutput.setForegroundColor(dialog.getResult);
 		lineNumbersTextWidget.setForegroundColor(dialog.getResult);
 
 		savePreferencesToFile(args);
@@ -178,10 +171,7 @@ class PreferencesWindow {
 			widget.setBackgroundColor(dialog.getResult);
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setBackgroundColor(dialog.getResult);
-		}
-
+		terminalOutput.setBackgroundColor(dialog.getResult);
 		lineNumbersTextWidget.setBackgroundColor(dialog.getResult);
 
 		savePreferencesToFile(args);
@@ -197,10 +187,7 @@ class PreferencesWindow {
 			widget.setInsertColor(dialog.getResult);
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setInsertColor(dialog.getResult);
-		}
-
+		terminalOutput.setInsertColor(dialog.getResult);
 		lineNumbersTextWidget.setInsertColor(dialog.getResult);
 
 		savePreferencesToFile(args);
@@ -216,10 +203,7 @@ class PreferencesWindow {
 			widget.setSelectionForegroundColor(dialog.getResult);
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setSelectionForegroundColor(dialog.getResult);
-		}
-
+		terminalOutput.setSelectionForegroundColor(dialog.getResult);
 		lineNumbersTextWidget.setSelectionForegroundColor(dialog.getResult);
 
 
@@ -236,10 +220,7 @@ class PreferencesWindow {
 			widget.setSelectionBackgroundColor(dialog.getResult);
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setSelectionBackgroundColor(dialog.getResult);
-		}
-
+		terminalOutput.setSelectionBackgroundColor(dialog.getResult);
 		lineNumbersTextWidget.setSelectionBackgroundColor(dialog.getResult);
 
 		savePreferencesToFile(args);
@@ -257,14 +238,12 @@ class PreferencesWindow {
 			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
 		}
 
-		foreach (widget; textWidgetArraySide) {
-			widget.setFont(textMain.getFont());
-			widget.setForegroundColor(textMain.getForegroundColor());
-			widget.setBackgroundColor(textMain.getBackgroundColor());
-			widget.setInsertColor(textMain.getInsertColor());
-			widget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
-			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
-		}
+		terminalOutput.setFont(textMain.getFont());
+		terminalOutput.setForegroundColor(textMain.getForegroundColor());
+		terminalOutput.setBackgroundColor(textMain.getBackgroundColor());
+		terminalOutput.setInsertColor(textMain.getInsertColor());
+		terminalOutput.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
+		terminalOutput.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
 
 		lineNumbersTextWidget.setFont(textMain.getFont());
 		lineNumbersTextWidget.setForegroundColor(textMain.getForegroundColor());
@@ -305,6 +284,7 @@ class PreferencesWindow {
 
 	// allows you to use the "Return" key to push buttons within the preferences window
 	// you can also use "Space" which is the default
+	// FIXME if i want to keep this then change to invoke
 	public void pressButton(CommandArgs args) {
 		if (changeFont.inState(["focus"])) {
 			openFontDialog(args);

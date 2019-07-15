@@ -59,18 +59,18 @@ class Syntax {
 
 	public void configureTags(Text textWidget) {
 		textWidget
-			.configTag("conditional", "-foreground red")
-			.configTag("loop", "-foreground red")
-			.configTag("type", "-foreground violet")
-			.configTag("keyword", "-foreground violet")
-			.configTag("symbol", "-foreground yellow")
-			.configTag("number", "-foreground orange")
-			.configTag("comment", "-foreground green")
-			.configTag("char", "-foreground teal")
-			.configTag("string", "-foreground teal")
-			.configTag("escapeCharacter", "-foreground indigo")
-			.configTag("function", "-foreground blue")
-			.configTag("tabWidth", "-tabs {1c}");
+			.configTag("conditional", "-foreground #f52a2a")					// red
+			.configTag("loop", "-foreground #f52a2a")							// red
+			.configTag("type", "-foreground #e277f7")							// light pink	
+			.configTag("keyword", "-foreground #e277f7")						// light pink
+			.configTag("symbol", "-foreground #fffb00")							// yellow
+			.configTag("number", "-foreground #ff9d00")							// orange
+			.configTag("comment", "-foreground #085710")						// dark green
+			.configTag("char", "-foreground #00fff7")							// cyan
+			.configTag("string", "-foreground #00fff7")							// cyan
+			.configTag("escapeCharacter", "-foreground #bb2af5")				// neon pink
+			.configTag("function", "-foreground #2a78f5")						// blue
+			.configTag("tabWidth", "-tabs {1c}");								// half of default
 	}
 
 	public void searchHighlight(Text textWidget, string pattern, string tags) {
@@ -100,6 +100,7 @@ class Syntax {
 			// check for functions
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
+				// TODO add checks for ")", "[", "]", ";", ":" and maybe others
 				string[] whitespace = textWidget.findAllInLine(" ", line);
 				string[] tab = textWidget.findAllInLine("\t", line);
 				string[] parentheses = textWidget.findAllInLine("(", line);
@@ -131,15 +132,10 @@ class Syntax {
 				}
 				startIndex = max(lastWhitespace, lastTab, lastParentheses, lastDot) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
 				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				// probably highligh parameters in the same block
 				stopIndex += 1; // add 1 to step over the opening parentheses since we dont highlight it with the function name
 				int numberOfParentheses = numberOfParenthesesInLine(textWidget, line);
 				for (int i = 1; i < numberOfParentheses; i++) {
-					if (line == 28) writeln(stopIndex);
 					stopIndex = checkLineForNextToken(textWidget, line, stopIndex, "(") + stopIndex;
-					if (line == 28) writeln(stopIndex);
-					// TODO we may want to keep this but change it for parentheses
-					//fromStartToClose = checkLineForNextToken(textWidget, line, startIndex + 1, '"') + 2;
 					whitespace = textWidget.findAllInLine(" ", line);
 					tab = textWidget.findAllInLine("\t", line);
 					parentheses = textWidget.findAllInLine("(", line);
