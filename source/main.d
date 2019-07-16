@@ -5,6 +5,7 @@ import std.stdio;
 import std.conv;
 import std.string;    
 import std.algorithm;
+import std.process;
 import preferenceswindow, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
 
 // NoteMaker application.
@@ -133,6 +134,9 @@ class Application : TkdApplication {
 		noteBook.bind("<<NotebookTabChanged>>", &lineNumbersUpdate);
 		root.bind("<<Modified>>", &updateLines);
 
+		gui.terminalInput.bind("<Return>", &terminalCommand);
+		gui.terminalInput.bind("<Control-c>", &terminalInterrupt);
+
 		// FIXME gets triggered when changing tabs since the the yview is different than it was on the last tab, maybe use Associative Array
 		double lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
 		root.setIdleCommand(delegate(CommandArgs args){
@@ -194,6 +198,28 @@ class Application : TkdApplication {
 		lineNumbersTextWidget.setYView(tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0]);
 	}
 
+	// basic terminal implementation
+	// not really suitable for debugging because the main program waits until the process is finished
+	// though it does keep the output its not realtime, only afterwards
+	public void terminalCommand(CommandArgs args) {
+		string command = gui.terminalInput.getValue();
+		gui.terminalInput.setValue("");
+		auto shell = executeShell(command);
+		string separator = "\n=======================\n\n";
+
+		if (shell.output != "") {
+			gui.terminalOutput.setReadOnly(false);
+			gui.terminalOutput.appendText(shell.output ~ separator);
+			gui.terminalOutput.setReadOnly();
+		}
+
+		gui.terminalOutput.seeText("end");
+	}
+
+	public void terminalInterrupt(CommandArgs args) {
+		// TODO better terminal
+	}
+
 	// resets the title to the name of the program
 	public void changeTitle(CommandArgs args) {
 		root.setTitle("Note Maker");
@@ -210,8 +236,10 @@ class Application : TkdApplication {
 			sideBySide
 				.addPane(side)
 				.setPaneWeight(1, 9);
+				gui.terminalInput.focus();
 		} else {
 			sideBySide.removePane(1);
+			tabs.getTextWidgetArray[noteBook.getCurrentTabId()].focus();
 		}
 		sideStatus++;
 	}

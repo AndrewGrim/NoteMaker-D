@@ -118,7 +118,6 @@ class Gui {
 						//.setWrapMode("none") // default is word
 						.setWidth(1) // to prevent scrollbars from dissappearing
 						.setHeight(1)
-						.appendText("this is the terminal!")
 						.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 					
 
