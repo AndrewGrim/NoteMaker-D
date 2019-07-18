@@ -30,3 +30,9 @@ enum
 struct 
 union 
 class 
+!int
+!float
+!double
+!bool
+!char
+!string

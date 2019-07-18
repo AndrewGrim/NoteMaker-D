@@ -92,11 +92,142 @@ class Syntax {
 		int startIndex;
 		int stopIndex;
 		int patternNumber = 1;
+		int numberOfPattern;
+		int arrayTypeStart;
+		int arrayTypeStop;
 		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function"];
 		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function"];
+		string[] functionEnd = [" ", ";", "!", "(", ")", "\t", "\n", "[", "]"];
 
 		// TODO refactor the if blocks into separate functions so its not cancer on your eyes
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
+			// check for special tk characters
+			if (checkLineForToken(textWidget, line, "[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "[");
+				stopIndex = startIndex + 1;
+				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, "[");
+				stopIndex += 1;
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "[") + stopIndex;
+					stopIndex = startIndex + 1;
+					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
+			if (checkLineForToken(textWidget, line, "]") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "]");
+				stopIndex = startIndex + 1;
+				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, "]");
+				stopIndex += 1;
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "]") + stopIndex;
+					stopIndex = startIndex + 1;
+					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
+			if (checkLineForToken(textWidget, line, "{") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "{");
+				stopIndex = startIndex + 1;
+				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, "{");
+				stopIndex += 1;
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "{") + stopIndex;
+					stopIndex = startIndex + 1;
+					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
+			if (checkLineForToken(textWidget, line, "}") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "}");
+				stopIndex = startIndex + 1;
+				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, "}");
+				stopIndex += 1;
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "}") + stopIndex;
+					stopIndex = startIndex + 1;
+					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
+			if (checkLineForToken(textWidget, line, ";") != -1) {
+				startIndex = checkLineForToken(textWidget, line, ";");
+				stopIndex = startIndex + 1;
+				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, ";");
+				stopIndex += 1;
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, ";") + stopIndex;
+					stopIndex = startIndex + 1;
+					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				}
+			}
+			// check for string arrays
+			if (checkLineForToken(textWidget, line, "string[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "string[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
+			// check for char arrays
+			if (checkLineForToken(textWidget, line, "char[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "char[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
+			// check for int arrays
+			if (checkLineForToken(textWidget, line, "int[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "int[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
+			// check for float arrays
+			if (checkLineForToken(textWidget, line, "float[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "float[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
+			// check for double arrays
+			if (checkLineForToken(textWidget, line, "double[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "double[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
+			// check for bool arrays
+			if (checkLineForToken(textWidget, line, "bool[") != -1) {
+				startIndex = checkLineForToken(textWidget, line, "bool[");
+				stopIndex = startIndex + ("string".length);
+				arrayTypeStart = stopIndex + 1;
+				arrayTypeStop = checkLineForToken(textWidget, line, "]");
+				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+				if (arrayTypeStart != arrayTypeStop) {
+					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+				}
+			}
 			// check for functions
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
@@ -278,7 +409,7 @@ class Syntax {
 				}
 			} else if (isMultiLineComment == true) {
 				foreach (item; removeTagsFromComments) {
-					textWidget.removeTag(item, startIndexFn(line, startIndex), lineEnd(line));
+					textWidget.removeTag(item, lineStart(line), lineEnd(line));
 				}
 				textWidget.addTag("comment", lineStart(line), lineEnd(line));
 			}
@@ -331,6 +462,14 @@ class Syntax {
 
 	public int numberOfEscapesInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("\\")).to!int;
+	}
+
+	public int numberOfPatternInLine(Text textWidget, int line, char pattern) {
+		return (textWidget.getLine(line).count(pattern)).to!int;
+	}
+
+	public int numberOfPatternInLine(Text textWidget, int line, string pattern) {
+		return (textWidget.getLine(line).count(pattern)).to!int;
 	}
 
 	public int numberOfParenthesesInLine(Text textWidget, int line) {

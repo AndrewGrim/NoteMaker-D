@@ -9,8 +9,6 @@ static
 new 
 this.
 this
-writeln
-.length
 to!
  in 
 eof
