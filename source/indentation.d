@@ -7,15 +7,15 @@ import std.conv;
 
 class Indentation {
 
-	public static void indent(NoteBook noteBook, Text[] textWidgetArray) {
+	public static void indent(NoteBook noteBook, Text[] textWidgetArray, string[] selectionRange) {
+		// FIXME when selection range extend more than one line it only inserts tab on the last line instead of all of them
 		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 		string insertLine = ((textWidget.getInsertCursorIndex().split("."))[0]) ~ ".0";
-
-		string[] selectionRange = textWidget.getTagRanges("sel");
 		if (!selectionRange.empty) {
 			string start = selectionRange[0];
 			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
+				writeln("multiple line selection tab");
 				int startLine = start.split(".")[0].to!int;
 				int endLine = end.split(".")[0].to!int;
 				for (int line = startLine; line <= endLine; line++) {

@@ -27,6 +27,10 @@ class Application : TkdApplication {
 	NoteBook noteBookTerminal;
 	PanedWindow sideBySide;
 	Text lineNumbersTextWidget;
+	string openingPairKey;
+	string closingPairKey;
+	string[] selectionRange;
+	string selectionText;
 
 	// initialize user interface
 	override public void initInterface() {
@@ -37,7 +41,7 @@ class Application : TkdApplication {
 			.setTitle("Note Maker")
 			.setGeometry(1200, 800, 250, 50);
 
-		root.bind("<<TextWidgetCreated>>", &addIndenationBindings);
+		root.bind("<<TextWidgetCreated>>", &addTextBindings);
 
 		// makes the code in "gui.d" usable in "main.d"
 		gui = new Gui(root);
@@ -102,6 +106,8 @@ class Application : TkdApplication {
 			.addSeparator()
 			.addEntry("SideBySide", &sideBySideMode, "Ctrl+B")
 			.addSeparator()
+			.addEntry("About", &about) // TODO shortcut
+			.addSeparator()
 			.addEntry("Quit", &exitApplication, "Ctrl+Q");
 
 		auto editMenu = new Menu(menuBar, "Edit", 0)
@@ -125,7 +131,7 @@ class Application : TkdApplication {
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
 		root.bind("<Control-b>", &sideBySideMode); // Enable/Disable SideBySide Mode
-		// help control-h, as either a message or a help file // TODO help or about
+		//root.bind("<Control-h>", &help); //help control-h, as either a message or a help file // TODO help or about
 		root.bind("<Control-q>", &exitApplication); // Quit
 
 		// virtual event functions
@@ -135,7 +141,6 @@ class Application : TkdApplication {
 		root.bind("<<Modified>>", &updateLines);
 
 		gui.terminalInput.bind("<Return>", &terminalCommand);
-		gui.terminalInput.bind("<Control-c>", &terminalInterrupt);
 
 		// FIXME gets triggered when changing tabs since the the yview is different than it was on the last tab, maybe use Associative Array
 		double lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
@@ -153,6 +158,61 @@ class Application : TkdApplication {
 				.setDetailMessage("Preferences file could not be found and has been created!")
 				.show();
 		}
+	}
+
+	// if selection IS empty adds the closingPairKey and moves the cursor back into pair of symbols, so you can start typing function arguments for example
+	// if selection is NOT empty calls undo to counteract the symbol replacing the selection, then adds the pair of symbols around the selection range
+	public void insertPair(CommandArgs args) { 
+		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
+		if (!selectionRange.empty) {
+			string start = selectionRange[0];
+			string end = selectionRange[1].split(".")[0] ~ "." ~ ((selectionRange[1].split(".")[1].to!int) + 1).to!string;
+			textWidget.undo();
+			textWidget.insertText(start, openingPairKey);
+			textWidget.insertText(end, closingPairKey);
+		} else {
+			string cursorPos = textWidget.getInsertCursorIndex();
+			int line = cursorPos.split(".")[0].to!int;
+			int character = cursorPos.split(".")[1].to!int;
+			character += 2;
+			textWidget.insertText(line, character, closingPairKey);
+			textWidget.moveInsertCursorBack(line, character);
+		}
+	}
+
+	public void delay(CommandArgs args) {
+		if (args.uniqueData == "<KeyPress-bracketleft>") {
+			openingPairKey = "[";
+			closingPairKey = "]";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-braceleft>") {
+			openingPairKey = "{";
+			closingPairKey = "}";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-parenleft>") {
+			openingPairKey = "(";
+			closingPairKey = ")";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-less>") {
+			openingPairKey = "<";
+			closingPairKey = ">";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-quotedbl>") {
+			openingPairKey = "\"";
+			closingPairKey = "\"";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-quoteleft>") {
+			openingPairKey = "`";
+			closingPairKey = "`";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-quoteright>") {
+			openingPairKey = "'";
+			closingPairKey = "'";
+			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-Tab>") {
+			root.after(&indent, 1);
+		}
+		selectionRange = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getTagRanges("sel");
 	}
 
 	public void updateLines(CommandArgs args) {
@@ -204,7 +264,12 @@ class Application : TkdApplication {
 	public void terminalCommand(CommandArgs args) {
 		string command = gui.terminalInput.getValue();
 		gui.terminalInput.setValue("");
-		auto shell = executeShell(command);
+		auto shell = executeShell(command,
+									null,
+									Config.none,
+									size_t.max,
+									null,
+									"C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe"); // TODO setting for default shell
 		string separator = "\n=======================\n\n";
 
 		if (shell.output != "") {
@@ -216,8 +281,8 @@ class Application : TkdApplication {
 		gui.terminalOutput.seeText("end");
 	}
 
-	public void terminalInterrupt(CommandArgs args) {
-		// TODO better terminal
+	public void about(CommandArgs args) {
+		browse("https://google.com");  // TODO point to github
 	}
 
 	// resets the title to the name of the program
@@ -245,20 +310,35 @@ class Application : TkdApplication {
 	}
 
 	// adds the indentation bindings to all the text widgets so that they can be actually used
-	public void addIndenationBindings(CommandArgs args) {
-		gui.textMain.bind("<Control-`>", &indent);
+	public void addTextBindings(CommandArgs args) {
+		gui.textMain.bind("<KeyPress-Tab>", &delay);
 		gui.textMain.bind("<Shift-Tab>", &unindent);
+		gui.textMain.bind("<KeyPress-bracketleft>", &delay);
+		gui.textMain.bind("<KeyPress-braceleft>", &delay);
+		gui.textMain.bind("<KeyPress-parenleft>", &delay);
+		gui.textMain.bind("<KeyPress-less>", &delay);
+		gui.textMain.bind("<KeyPress-quotedbl>", &delay);
+		gui.textMain.bind("<KeyPress-quoteleft>", &delay);
+		gui.textMain.bind("<KeyPress-quoteright>", &delay);
 		if (!applicationInitialization) {
 			foreach (widget; tabs.getTextWidgetArray()) {
-				widget.bind("<Control-`>", &indent);
+				widget.bind("<KeyPress-Tab>", &delay);
 				widget.bind("<Shift-Tab>", &unindent);
+				widget.bind("<KeyPress-bracketleft>", &delay);
+				widget.bind("<KeyPress-braceleft>", &delay);
+				widget.bind("<KeyPress-parenleft>", &delay);
+				widget.bind("<KeyPress-less>", &delay);
+				widget.bind("<KeyPress-quotedbl>", &delay);
+				widget.bind("<KeyPress-quoteleft>", &delay);
+				widget.bind("<KeyPress-quoteright>", &delay);
 			}
 		}
 	}
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
-		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
+		tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].undo();
+		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray(), selectionRange);
 	}
 
 	// unindents the text, works with both single lines and selection
