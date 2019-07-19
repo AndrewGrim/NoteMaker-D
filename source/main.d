@@ -170,6 +170,8 @@ class Application : TkdApplication {
 			textWidget.undo();
 			textWidget.insertText(start, openingPairKey);
 			textWidget.insertText(end, closingPairKey);
+			//root.after(&manualHighlight, 1); this can be kept if you do the line below
+			// TODO implement highlight for only a specified number of lines to not make the application halt for a second
 		} else {
 			string cursorPos = textWidget.getInsertCursorIndex();
 			int line = cursorPos.split(".")[0].to!int;
@@ -209,8 +211,6 @@ class Application : TkdApplication {
 			openingPairKey = "'";
 			closingPairKey = "'";
 			root.after(&insertPair, 1);
-		} else if (args.uniqueData == "<KeyPress-Tab>") {
-			root.after(&indent, 1);
 		}
 		selectionRange = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getTagRanges("sel");
 	}
@@ -311,7 +311,7 @@ class Application : TkdApplication {
 
 	// adds the indentation bindings to all the text widgets so that they can be actually used
 	public void addTextBindings(CommandArgs args) {
-		gui.textMain.bind("<KeyPress-Tab>", &delay);
+		gui.textMain.bind("<Control-`>", &indent);
 		gui.textMain.bind("<Shift-Tab>", &unindent);
 		gui.textMain.bind("<KeyPress-bracketleft>", &delay);
 		gui.textMain.bind("<KeyPress-braceleft>", &delay);
@@ -322,7 +322,7 @@ class Application : TkdApplication {
 		gui.textMain.bind("<KeyPress-quoteright>", &delay);
 		if (!applicationInitialization) {
 			foreach (widget; tabs.getTextWidgetArray()) {
-				widget.bind("<KeyPress-Tab>", &delay);
+				widget.bind("<Control-`>", &indent);
 				widget.bind("<Shift-Tab>", &unindent);
 				widget.bind("<KeyPress-bracketleft>", &delay);
 				widget.bind("<KeyPress-braceleft>", &delay);
@@ -337,8 +337,7 @@ class Application : TkdApplication {
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
-		tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].undo();
-		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray(), selectionRange);
+		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
 	}
 
 	// unindents the text, works with both single lines and selection
