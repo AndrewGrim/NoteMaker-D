@@ -17,6 +17,8 @@ struct Preferences {
 	string selectionForeground;
 	string selectionBackground;
 	bool saveOnModified;
+	string shell;
+	string syntaxTheme;
 
 	void printPreferences() {
 		writeln("font: ", font);
@@ -27,6 +29,8 @@ struct Preferences {
 		writeln("selectionForeground: ", selectionForeground);
 		writeln("selectionBackground: ", selectionBackground);
 		writeln("saveOnModified: ", saveOnModified);
+		writeln("shell: ", shell);
+		writeln("syntaxTheme: ", syntaxTheme);
 	}
 }
 
@@ -68,6 +72,12 @@ Preferences readPreferencesFile() {
 				break;
 			case "[SAVE ON MODIFIED]":
 				preferences.saveOnModified = chomp(f.readln()).to!bool;
+				break;
+			case "[SHELL]":
+				preferences.shell = chomp(f.readln());
+				break;
+			case "[SYNTAX THEME]":
+				preferences.syntaxTheme = chomp(f.readln());
 				break;
 			default:
 				break;

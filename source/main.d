@@ -6,6 +6,7 @@ import std.conv;
 import std.string;    
 import std.algorithm;
 import std.process;
+import std.exception;
 import preferenceswindow, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
 
 // NoteMaker application.
@@ -57,7 +58,10 @@ class Application : TkdApplication {
 			// creates the text widget containing the line numbers
 			this.lineNumbersTextWidget = new Text(linesPane)
 				.configTag("alignCenter", "-justify center")
-				.pack(0, 0, GeometrySide.left, GeometryFill.y, AnchorPosition.north, false);
+				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
+
+			auto paddingLabel = new Label(linesPane, " ")
+				.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
 
 			noteBookLines
 				.addTab("#", linesPane)
@@ -93,7 +97,7 @@ class Application : TkdApplication {
 
 		// sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
-			.addEntry("Open File...", &openFile, "Ctrl+F")
+			.addEntry("Open File...", &openFile, "Ctrl+O")
 			.addEntry("Open File In A New Tab", &openFileInNewTab, "Ctrl+Alt+F")
 			.addEntry("Save", &saveFile, "Ctrl+S")
 			.addEntry("Save As", &saveFileAs, "Ctrl+Alt+S")
@@ -106,7 +110,7 @@ class Application : TkdApplication {
 			.addSeparator()
 			.addEntry("SideBySide", &sideBySideMode, "Ctrl+B")
 			.addSeparator()
-			.addEntry("About", &about) // TODO shortcut
+			.addEntry("About", &about)
 			.addSeparator()
 			.addEntry("Quit", &exitApplication, "Ctrl+Q");
 
@@ -123,7 +127,7 @@ class Application : TkdApplication {
 		root.bind("<Control-Alt-f>", &openFileInNewTab); // Open File In A New Tab
 		root.bind("<Control-s>", &saveFile); // Save
 		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
-		root.bind("<Control-t>", &tabs.createNewTab); // New Tab // FIXME move the line up?? might need to change the keybind to something that doesnt interfer
+		root.bind("<Control-n>", &tabs.createNewTab); // New Tab
 		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
 		root.bind("<Control-KeyPress-1>", &tabs.nextTab); // Next Tab
 		root.bind("<Control-KeyPress-2>", &tabs.previousTab); // Previous Tab
@@ -131,18 +135,16 @@ class Application : TkdApplication {
 		root.bind("<Control-p>", &openPreferences); // Preferences
 		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
 		root.bind("<Control-b>", &sideBySideMode); // Enable/Disable SideBySide Mode
-		//root.bind("<Control-h>", &help); //help control-h, as either a message or a help file // TODO help or about
+		//root.bind("<Control-h>", &help); //help control-h, as either a message or a help file // TODO help open new tab and load the readme
 		root.bind("<Control-q>", &exitApplication); // Quit
 
 		// virtual event functions
-		//root.bind("<<Modified>>", &saveOnModified); // FIXME renable once other shit is finished
 		root.bind("<<ResetTitle>>", &resetTitle);
 		noteBook.bind("<<NotebookTabChanged>>", &lineNumbersUpdate);
 		root.bind("<<Modified>>", &updateLines);
 
 		gui.terminalInput.bind("<Return>", &terminalCommand);
 
-		// FIXME gets triggered when changing tabs since the the yview is different than it was on the last tab, maybe use Associative Array
 		double lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
 		root.setIdleCommand(delegate(CommandArgs args){
 			if (tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0] != lastYViewPos) {
@@ -164,69 +166,78 @@ class Application : TkdApplication {
 	// if selection is NOT empty calls undo to counteract the symbol replacing the selection, then adds the pair of symbols around the selection range
 	public void insertPair(CommandArgs args) { 
 		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
+		textWidget.setReadOnly(false);
 		if (!selectionRange.empty) {
 			string start = selectionRange[0];
 			string end = selectionRange[1].split(".")[0] ~ "." ~ ((selectionRange[1].split(".")[1].to!int) + 1).to!string;
-			textWidget.undo();
 			textWidget.insertText(start, openingPairKey);
 			textWidget.insertText(end, closingPairKey);
-			//root.after(&manualHighlight, 1); this can be kept if you do the line below
-			// TODO implement highlight for only a specified number of lines to not make the application halt for a second
+			textWidget.setInsertCursor(end);
 		} else {
 			string cursorPos = textWidget.getInsertCursorIndex();
 			int line = cursorPos.split(".")[0].to!int;
 			int character = cursorPos.split(".")[1].to!int;
 			character += 2;
+			textWidget.insertText(line, character - 1, openingPairKey);
 			textWidget.insertText(line, character, closingPairKey);
-			textWidget.moveInsertCursorBack(line, character);
+			textWidget.moveInsertCursorBack(line, character + 1);
 		}
 	}
 
 	public void delay(CommandArgs args) {
+		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
 		if (args.uniqueData == "<KeyPress-bracketleft>") {
 			openingPairKey = "[";
 			closingPairKey = "]";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-braceleft>") {
 			openingPairKey = "{";
 			closingPairKey = "}";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-parenleft>") {
 			openingPairKey = "(";
 			closingPairKey = ")";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-less>") {
 			openingPairKey = "<";
 			closingPairKey = ">";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-quotedbl>") {
 			openingPairKey = "\"";
 			closingPairKey = "\"";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-quoteleft>") {
 			openingPairKey = "`";
 			closingPairKey = "`";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
 		} else if (args.uniqueData == "<KeyPress-quoteright>") {
 			openingPairKey = "'";
 			closingPairKey = "'";
+			textWidget.setReadOnly();
 			root.after(&insertPair, 1);
+		} else if (args.uniqueData == "<KeyPress-Tab>") {
+			textWidget.setReadOnly();
+			root.after(&indent, 1);
+		} else {
+			writeln("unhandled key : ", args.uniqueData);
 		}
-		selectionRange = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getTagRanges("sel");
+		selectionRange = textWidget.getTagRanges("sel");
 	}
 
 	public void updateLines(CommandArgs args) {
-		// TODO create three methods that do stuff on <<modified>> event determined by args callback or something
-		// one for save on modified
-		// two for updating lines
-		// three for checking wheter file has been modified but not saved
-		foreach (textWidget; tabs.getTextWidgetArray()) {
-			textWidget.setModified(false);
-		}
-		lineNumbersUpdate(args); // TODO check for change in number of lines and only then call the function
+		tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].setModified(false);
+
+		lineNumbersUpdate(args);
 	}
 
-	public void lineNumbersUpdate(CommandArgs arg) {
+	public void lineNumbersUpdate(CommandArgs args) {
+		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
 		string numOfLines = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0];
 
 		string lineNumbers;
@@ -241,7 +252,6 @@ class Application : TkdApplication {
 				}
 			}
 		}
-		lineNumbers ~= "\n" ~ "###";
 
 		lineNumbersTextWidget.setReadOnly(false);
 		if ((numOfLines.length).to!int < 3) {
@@ -249,27 +259,37 @@ class Application : TkdApplication {
 		} else {
 			lineNumbersTextWidget.setWidth((numOfLines.length).to!int);
 		}
-		lineNumbersTextWidget.setFont(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getFont());
-		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
-		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
+		lineNumbersTextWidget.setFont(textWidget.getFont());
+		lineNumbersTextWidget.setForegroundColor(textWidget.getForegroundColor());
+		lineNumbersTextWidget.setBackgroundColor(textWidget.getBackgroundColor());
 		lineNumbersTextWidget.clear();
 		lineNumbersTextWidget.appendText(lineNumbers, "alignCenter");
 		lineNumbersTextWidget.setReadOnly();
-		lineNumbersTextWidget.setYView(tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0]);
+		if (args.uniqueData == "<<NotebookTabChanged>>") {
+			lineNumbersTextWidget.setYView(textWidget.getYView()[0]);
+		}
+		
 	}
 
 	// basic terminal implementation
 	// not really suitable for debugging because the main program waits until the process is finished
 	// though it does keep the output its not realtime, only afterwards
+	// TODO scroll through recent terminal commands using arrows
 	public void terminalCommand(CommandArgs args) {
 		string command = gui.terminalInput.getValue();
 		gui.terminalInput.setValue("");
+		string shellPath = pref.preferences.shell;
+		
+		if (shellPath.toLower == "default") {
+			shellPath = userShell();
+		}
 		auto shell = executeShell(command,
-									null,
-									Config.none,
-									size_t.max,
-									null,
-									"C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe"); // TODO setting for default shell
+								null,
+								Config.none,
+								size_t.max,
+								null,
+								shellPath);
+		
 		string separator = "\n=======================\n\n";
 
 		if (shell.output != "") {
@@ -282,7 +302,7 @@ class Application : TkdApplication {
 	}
 
 	public void about(CommandArgs args) {
-		browse("https://google.com");  // TODO point to github
+		browse("https://github.com/AndrewGrim/NoteMaker-D");
 	}
 
 	// resets the title to the name of the program
@@ -290,9 +310,9 @@ class Application : TkdApplication {
 		root.setTitle("Note Maker");
 	}
 
-	// resets the title after 3seconds once a <<ResetTitle>> event is detected
+	// resets the title after 1.5 seconds once a <<ResetTitle>> event is detected
 	public void resetTitle(CommandArgs args) {
-		root.after(&changeTitle, 3000);
+		root.after(&changeTitle, 1500);
 	}
 
 	// opens and closes the side by side mode
@@ -311,8 +331,12 @@ class Application : TkdApplication {
 
 	// adds the indentation bindings to all the text widgets so that they can be actually used
 	public void addTextBindings(CommandArgs args) {
-		gui.textMain.bind("<Control-`>", &indent);
-		gui.textMain.bind("<Shift-Tab>", &unindent);
+		gui.textMain.bind("<KeyPress-Tab>", &delay);
+		version (Windows) {
+			gui.textMain.bind("<Shift-Tab>", &unindent);
+		} else {
+			gui.textMain.bind("<Control-`>", &unindent);
+		}
 		gui.textMain.bind("<KeyPress-bracketleft>", &delay);
 		gui.textMain.bind("<KeyPress-braceleft>", &delay);
 		gui.textMain.bind("<KeyPress-parenleft>", &delay);
@@ -320,10 +344,16 @@ class Application : TkdApplication {
 		gui.textMain.bind("<KeyPress-quotedbl>", &delay);
 		gui.textMain.bind("<KeyPress-quoteleft>", &delay);
 		gui.textMain.bind("<KeyPress-quoteright>", &delay);
+		gui.textMain.bind("<<Modified>>", &saveOnModified);
 		if (!applicationInitialization) {
 			foreach (widget; tabs.getTextWidgetArray()) {
-				widget.bind("<Control-`>", &indent);
-				widget.bind("<Shift-Tab>", &unindent);
+				widget.bind("<<Modified>>", &saveOnModified);
+				widget.bind("<KeyPress-Tab>", &delay);
+				version (Windows) {
+					widget.bind("<Shift-Tab>", &unindent);
+				} else {
+					widget.bind("<Control-`>", &unindent);
+				}
 				widget.bind("<KeyPress-bracketleft>", &delay);
 				widget.bind("<KeyPress-braceleft>", &delay);
 				widget.bind("<KeyPress-parenleft>", &delay);
@@ -337,7 +367,11 @@ class Application : TkdApplication {
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
-		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray());
+		root.cancelAfter(root.after(&changeTitle, 1500)); // cancels the change title event which would cause indent to trigger again if called before the title event finished
+		if (io.getOpeningFile) {
+			io.setOpeningFile(false);
+		}
+		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray(), selectionRange);
 	}
 
 	// unindents the text, works with both single lines and selection
@@ -404,12 +438,16 @@ class Application : TkdApplication {
 
 	// automatically highlights the defined syntax
 	public void automaticHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.getTextWidgetArray());
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme);
+		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
+		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}
 
 	// manually highlights the defined syntax bypassing the supported extensions check, results will vary
 	public void manualHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), true);
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme, true);
+		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
+		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}
 
 	// quits the application

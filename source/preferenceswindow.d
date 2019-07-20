@@ -30,6 +30,8 @@ class PreferencesWindow {
 	CheckButton setSaveOnModified;
 	Text lineNumbersTextWidget;
 	Text terminalOutput;
+	Entry shellPath;
+	ComboBox syntaxTheme;
 
 
 	// constructor
@@ -113,6 +115,21 @@ class PreferencesWindow {
 			} catch (ConvException convError) {
 				writeln("Couldn't convert opacity string to float!");
 			}
+		
+		auto shellLabel = new Label(preferencesFrame, "Terminal Shell:")
+			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+
+		this.shellPath = new Entry(preferencesFrame)
+			.setValue(preferences.shell)
+			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+
+		auto syntaxLabel = new Label(preferencesFrame, "Syntax Theme:")
+			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+
+		this.syntaxTheme = new ComboBox(preferencesFrame)
+			.setValue(preferences.syntaxTheme)
+			.setData(["Default", "Gruvbox"])
+			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
 
 		this.savePreferences = new Button(preferencesFrame, "Save Preferences")
 			.setCommand(&savePreferencesToFile)
@@ -263,8 +280,13 @@ class PreferencesWindow {
 		f.write("[OPACITY / TRANSPARENCY]\n" ~ opacitySlider.getValue().to!string ~ "\n");
 		f.write("[SELECTION FOREGROUND COLOR]\n" ~ textMain.getSelectionForegroundColor() ~ "\n");
 		f.write("[SELECTION BACKGROUND COLOR]\n" ~ textMain.getSelectionBackgroundColor() ~ "\n");
-		f.write("[SAVE ON MODIFIED]\n" ~ preferences.saveOnModified.to!string);
+		f.write("[SAVE ON MODIFIED]\n" ~ preferences.saveOnModified.to!string ~ "\n");
+		f.write("[SHELL]\n" ~ shellPath.getValue() ~ "\n");
+		f.write("[SYNTAX THEME]\n" ~ syntaxTheme.getValue());
 		f.close();  
+
+		preferences.shell = shellPath.getValue();
+		preferences.syntaxTheme = syntaxTheme.getValue();
 
 		applyPreferencesToWidgets();
 

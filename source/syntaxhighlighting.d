@@ -22,7 +22,7 @@ class Syntax {
 		highlightOnLoad = state;
 	}
 
-	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, bool manual = false) {
+	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, string syntaxTheme, bool manual = false) {
 		string[] supportedLanguages = [".d", ".c", ".cpp", ".h", ".hpp"];
 		if (supportedLanguages.canFind((noteBook.getTabText(noteBook.getCurrentTabId())).extension)
 			|| manual == true) {
@@ -30,7 +30,11 @@ class Syntax {
 			Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
 			textWidget.setForegroundColor("#ffffff");
-			configureTags(textWidget);
+			configureTags(textWidget, syntaxTheme);
+			string[] allTags = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function", "comment", "class"];
+			foreach (tag; allTags) {
+				textWidget.removeTag(tag, "1.0", "end");
+			}
 			textWidget.addTag("tabWidth", "1.0", "end");
 			string[string] tags = [ "keywords.txt" : "keyword", "conditionals.txt" : "conditional", "loops.txt" : "loop",
 									"types.txt" : "type", "symbols.txt"  : "symbol", "numbers.txt"  : "number"];
@@ -57,20 +61,43 @@ class Syntax {
 		}
 	}
 
-	public void configureTags(Text textWidget) {
-		textWidget
-			.configTag("conditional", "-foreground #f52a2a")					// red
-			.configTag("loop", "-foreground #f52a2a")							// red
-			.configTag("type", "-foreground #e277f7")							// light pink	
-			.configTag("keyword", "-foreground #e277f7")						// light pink
-			.configTag("symbol", "-foreground #fffb00")							// yellow
-			.configTag("number", "-foreground #ff9d00")							// orange
-			.configTag("comment", "-foreground #085710")						// dark green
-			.configTag("char", "-foreground #00fff7")							// cyan
-			.configTag("string", "-foreground #00fff7")							// cyan
-			.configTag("escapeCharacter", "-foreground #bb2af5")				// neon pink
-			.configTag("function", "-foreground #2a78f5")						// blue
-			.configTag("tabWidth", "-tabs {1c}");								// half of default
+	// TODO syntax theme
+	public void configureTags(Text textWidget, string syntaxTheme) {
+		if (syntaxTheme.toLower == "gruvbox") {
+			// gruvbox
+			textWidget
+				.setForegroundColor("#ebdbb2")										// creme
+				.setBackgroundColor("#282828")										// dark grey
+				.configTag("conditional", "-foreground #fb4934")					// red
+				.configTag("loop", "-foreground #fb4934")							// red
+				.configTag("type", "-foreground #fb4934")							// red	
+				.configTag("keyword", "-foreground #fb4934")						// red
+				.configTag("symbol", "-foreground #8ec07c")							// light green
+				.configTag("number", "-foreground #d3869b")							// light blue
+				.configTag("comment", "-foreground #928374")						// gray
+				.configTag("char", "-foreground #b8bb26")							// green
+				.configTag("string", "-foreground #b8bb26")							// green
+				.configTag("escapeCharacter", "-foreground #fb4934")				// red
+				.configTag("function", "-foreground #b8bb26")						// green
+				.configTag("class", "-foreground #fabd2f")							// yellow
+				.configTag("tabWidth", "-tabs {1c}");								// half of default
+		} else {
+			// default
+			textWidget
+				.configTag("conditional", "-foreground #f52a2a")					// red
+				.configTag("loop", "-foreground #f52a2a")							// red
+				.configTag("type", "-foreground #e277f7")							// light pink	
+				.configTag("keyword", "-foreground #e277f7")						// light pink
+				.configTag("symbol", "-foreground #fffb00")							// yellow
+				.configTag("number", "-foreground #ff9d00")							// orange
+				.configTag("comment", "-foreground #085710")						// dark green
+				.configTag("char", "-foreground #00fff7")							// cyan
+				.configTag("string", "-foreground #00fff7")							// cyan
+				.configTag("escapeCharacter", "-foreground #bb2af5")				// neon pink
+				.configTag("function", "-foreground #2a78f5")						// blue
+				.configTag("class", "-foreground #fabd2f")							// yellow // TODO change color
+				.configTag("tabWidth", "-tabs {1c}");								// half of default
+		}	
 	}
 
 	public void searchHighlight(Text textWidget, string pattern, string tags) {
@@ -95,9 +122,9 @@ class Syntax {
 		int numberOfPattern;
 		int arrayTypeStart;
 		int arrayTypeStop;
-		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function"];
-		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function"];
-		string[] functionEnd = [" ", ";", "!", "(", ")", "\t", "\n", "[", "]"];
+		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function", "class"];
+		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function", "class"];
+		string[] capitalLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 
 		// TODO refactor the if blocks into separate functions so its not cancer on your eyes
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
@@ -165,7 +192,7 @@ class Syntax {
 			// check for string arrays
 			if (checkLineForToken(textWidget, line, "string[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "string[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -176,7 +203,7 @@ class Syntax {
 			// check for char arrays
 			if (checkLineForToken(textWidget, line, "char[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "char[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -187,7 +214,7 @@ class Syntax {
 			// check for int arrays
 			if (checkLineForToken(textWidget, line, "int[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "int[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -198,7 +225,7 @@ class Syntax {
 			// check for float arrays
 			if (checkLineForToken(textWidget, line, "float[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "float[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -209,7 +236,7 @@ class Syntax {
 			// check for double arrays
 			if (checkLineForToken(textWidget, line, "double[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "double[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -220,7 +247,7 @@ class Syntax {
 			// check for bool arrays
 			if (checkLineForToken(textWidget, line, "bool[") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "bool[");
-				stopIndex = startIndex + ("string".length);
+				stopIndex = startIndex.to!int + ("string".length).to!int;
 				arrayTypeStart = stopIndex + 1;
 				arrayTypeStop = checkLineForToken(textWidget, line, "]");
 				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
@@ -301,6 +328,55 @@ class Syntax {
 					stopIndex += 1;	
 				}
 			}
+			// check for class
+			foreach (letter; capitalLetters) {
+				startIndex = checkLineForToken(textWidget, line, letter);
+				if ((startIndex != -1 && textWidget.getChar(line, startIndex - 1) == " ") ||
+					(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == ".") ||
+					(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "\t") ||
+					(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "(") ||
+					(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "\"") ||
+					(startIndex != -1 && startIndex == 0)) {
+					stopIndex = startIndex;
+					for (; stopIndex < (textWidget.getLineLength(line).split(".")[1]).to!int; stopIndex++) {
+						if (textWidget.getChar(line, stopIndex) == " " ||
+							textWidget.getChar(line, stopIndex) == "{" ||
+							textWidget.getChar(line, stopIndex) == "." ||
+							textWidget.getChar(line, stopIndex) == "[" ||
+							textWidget.getChar(line, stopIndex) == "(" ||
+							textWidget.getChar(line, stopIndex) == ")" ||
+							textWidget.getChar(line, stopIndex) == "\"" ||
+							textWidget.getChar(line, stopIndex) == "!") {
+							break;
+						}
+					}
+				textWidget.addTag("class", startIndexFn(line, startIndex), startIndexFn(line, stopIndex));
+				numberOfPattern = numberOfPatternInLine(textWidget, line, letter);
+				for (int i = 1; i < numberOfPattern; i++) {
+					startIndex = checkLineForNextToken(textWidget, line, stopIndex, letter) + stopIndex;
+					if ((startIndex != -1 && textWidget.getChar(line, startIndex - 1) == " ") ||
+						(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == ".") ||
+						(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "\t") ||
+						(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "(") ||
+						(startIndex != -1 && textWidget.getChar(line, startIndex - 1) == "\"")) {
+						stopIndex = startIndex;
+						for (; stopIndex < (textWidget.getLineLength(line).split(".")[1]).to!int; stopIndex++) {
+							if (textWidget.getChar(line, stopIndex) == " " ||
+								textWidget.getChar(line, stopIndex) == "{" ||
+								textWidget.getChar(line, stopIndex) == "." ||
+								textWidget.getChar(line, stopIndex) == "[" ||
+								textWidget.getChar(line, stopIndex) == "(" ||
+								textWidget.getChar(line, stopIndex) == ")" ||
+								textWidget.getChar(line, stopIndex) == "\"" ||
+								textWidget.getChar(line, stopIndex) == "!") {
+								break;
+							}
+						}
+					}
+					textWidget.addTag("class", startIndexFn(line, startIndex), startIndexFn(line, stopIndex));
+				}
+				}
+			}
 			// check for literal string
 			if (checkLineForToken(textWidget, line, '"') != -1) {
 				startIndex = checkLineForToken(textWidget, line, '"');
@@ -374,7 +450,7 @@ class Syntax {
 					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "\\") + stopIndex;
 					stopIndex = startIndex + 2;
 					if (i == (numberOfEscapes - 1)) {
-						stopIndex--;
+						//stopIndex--; dude :(
 					}
 					foreach (item; removeTagsFromComments) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));

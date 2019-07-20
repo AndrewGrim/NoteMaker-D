@@ -52,7 +52,9 @@ class Gui {
 						"[OPACITY / TRANSPARENCY]\n1.0\n",
 						"[SELECTION FOREGROUND COLOR]\n#000000\n",
 						"[SELECTION BACKGROUND COLOR]\n#b8baba\n",
-						"[SAVE ON MODIFIED]\nfalse");
+						"[SAVE ON MODIFIED]\nfalse\n",
+						"[SHELL]\ndefault\n",
+						"[SYNTAX THEME]\ndefault");
 						f.close();
 
 						writeln("Failed to read preferences file! Preferences file created!");

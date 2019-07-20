@@ -1,26 +1,3 @@
-ask if user wants to save if the text has been modified upon quiting
-add icon to notebook tab when file has been modified but not saved
-label with row and column selection
-add " and ' and ( and { and [ and < around selection
-indentation marks
-implement testing assert and make docs
-search/find widget
-minimap
 better readme - how to build
 update screenshots, scale down mainWindow screenshot
-brackets and other pairs - selected scope
-save state on quit so you can resume
-
-preset color schemes like: 
-	gruvbox
-	or the one i started with
-
-activate event for sidebyside??
-
-*** priority ***
-
-3. better highlights
-	highlight class names and function names (done... but doesnt include .split though it works on split())
-	highlight arrays
-	parameters
-4. fix sidebyside or remove it but introduce a different feature using paned window
+implement testing assert and make docs

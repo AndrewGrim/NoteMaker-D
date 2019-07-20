@@ -5,3 +5,6 @@ finally
 try 
 catch 
 version 
+case 
+default:
+switch 

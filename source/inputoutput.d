@@ -70,12 +70,12 @@ class InputOutput {
 				removeLines = 2;
 			}
 
+			textWidgetArray[noteBook.getCurrentTabId()].setReadOnly(false);
 			textWidgetArray[noteBook.getCurrentTabId()].clear();
 			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent, "tabWidth");
 			
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 			root.setTitle("File opened: " ~ fileToOpen);
-			root.generateEvent("<<ResetTitle>>");
 			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
 
 			string numOfLines = ((textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0].to!int) - removeLines).to!string;
@@ -89,9 +89,7 @@ class InputOutput {
 					lineNumbers ~= i.to!string ~ "\n";
 				}
 			}
-			lineNumbers ~= "###";
 			
-			lineNumbersTextWidget.setReadOnly(false);
 			if ((numOfLines.length).to!int < 3) {
 				lineNumbersTextWidget.setWidth(3);
 			} else {
@@ -105,6 +103,7 @@ class InputOutput {
 			lineNumbersTextWidget.setReadOnly();
 
 			openingFile = true;
+			root.generateEvent("<<ResetTitle>>");
 		}
 	}	
 
@@ -136,10 +135,10 @@ class InputOutput {
 
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 			root.setTitle("File saved: " ~ fileToSave);
-			root.generateEvent("<<ResetTitle>>");
 			tabNameFilePath[baseName(fileToSave)] = fileToSave;
 
 			textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
+			root.generateEvent("<<ResetTitle>>");
 		}
 	}
 
@@ -164,9 +163,9 @@ class InputOutput {
 
 				noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 				root.setTitle("File saved: " ~ fileToSave);
-				root.generateEvent("<<ResetTitle>>");
 
 				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
+				root.generateEvent("<<ResetTitle>>");
 			}
 		}
 	}
