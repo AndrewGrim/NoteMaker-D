@@ -388,7 +388,7 @@ class Syntax {
 				}
 				textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
-					// corner case where the last " in "\"" would not get marked teal, because they're coded to work in pairs 
+					// corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs 
 					startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 					fromStartToClose = 1;
 					stopIndex = startIndex + fromStartToClose;
@@ -406,7 +406,7 @@ class Syntax {
 					}
 					textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 					if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
-						// corner case where the last " in "\"" would not get marked green, because they're coded to work in pairs 
+						// corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs 
 						startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 						fromStartToClose = 1;
 						stopIndex = startIndex + fromStartToClose;
@@ -450,7 +450,7 @@ class Syntax {
 					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "\\") + stopIndex;
 					stopIndex = startIndex + 2;
 					if (i == (numberOfEscapes - 1)) {
-						//stopIndex--; dude :(
+						stopIndex -= 1;
 					}
 					foreach (item; removeTagsFromComments) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
