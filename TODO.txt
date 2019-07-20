@@ -1,3 +1,2 @@
-better readme - how to build
-update screenshots, scale down mainWindow screenshot
-implement testing assert and make docs
+make docs
+implement testing - assert

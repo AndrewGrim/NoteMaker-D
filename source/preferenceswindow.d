@@ -289,6 +289,7 @@ class PreferencesWindow {
 
 		preferences.shell = shellPath.getValue();
 		preferences.syntaxTheme = syntaxTheme.getValue();
+		preferences.opacity = opacitySlider.getValue();
 
 		applyPreferencesToWidgets();
 
