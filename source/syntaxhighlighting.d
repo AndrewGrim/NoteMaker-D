@@ -84,6 +84,8 @@ class Syntax {
 		} else {
 			// default
 			textWidget
+				.setForegroundColor("#ffffff")										// white
+				.setBackgroundColor("#000000")										// black
 				.configTag("conditional", "-foreground #f52a2a")					// red
 				.configTag("loop", "-foreground #f52a2a")							// red
 				.configTag("type", "-foreground #e277f7")							// light pink	
@@ -95,7 +97,7 @@ class Syntax {
 				.configTag("string", "-foreground #00fff7")							// cyan
 				.configTag("escapeCharacter", "-foreground #bb2af5")				// neon pink
 				.configTag("function", "-foreground #2a78f5")						// blue
-				.configTag("class", "-foreground #fabd2f")							// yellow // TODO change color
+				.configTag("class", "-foreground #fadc0f")							// yellow
 				.configTag("tabWidth", "-tabs {1c}");								// half of default
 		}	
 	}

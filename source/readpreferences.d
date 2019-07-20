@@ -19,6 +19,8 @@ struct Preferences {
 	bool saveOnModified;
 	string shell;
 	string syntaxTheme;
+	int width;
+	int height;
 
 	void printPreferences() {
 		writeln("font: ", font);
@@ -31,6 +33,8 @@ struct Preferences {
 		writeln("saveOnModified: ", saveOnModified);
 		writeln("shell: ", shell);
 		writeln("syntaxTheme: ", syntaxTheme);
+		writeln("width: ", width);
+		writeln("height: ", height);
 	}
 }
 
@@ -78,6 +82,12 @@ Preferences readPreferencesFile() {
 				break;
 			case "[SYNTAX THEME]":
 				preferences.syntaxTheme = chomp(f.readln());
+				break;
+			case "[WIDTH]":
+				preferences.width = chomp(f.readln()).to!int;
+				break;
+			case "[HEIGHT]":
+				preferences.height = chomp(f.readln()).to!int;
 				break;
 			default:
 				break;

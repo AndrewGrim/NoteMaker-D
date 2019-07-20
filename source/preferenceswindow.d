@@ -282,7 +282,9 @@ class PreferencesWindow {
 		f.write("[SELECTION BACKGROUND COLOR]\n" ~ textMain.getSelectionBackgroundColor() ~ "\n");
 		f.write("[SAVE ON MODIFIED]\n" ~ preferences.saveOnModified.to!string ~ "\n");
 		f.write("[SHELL]\n" ~ shellPath.getValue() ~ "\n");
-		f.write("[SYNTAX THEME]\n" ~ syntaxTheme.getValue());
+		f.write("[SYNTAX THEME]\n" ~ syntaxTheme.getValue() ~ "\n");
+		f.write("[WIDTH]\n" ~ preferences.width.to!string ~ "\n");
+		f.write("[HEIGHT]\n" ~ preferences.height.to!string);
 		f.close();  
 
 		preferences.shell = shellPath.getValue();

@@ -39,8 +39,7 @@ class Application : TkdApplication {
 		// sets up root
 		this.root = mainWindow()
 			.setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
-			.setTitle("Note Maker")
-			.setGeometry(1200, 800, 250, 50);
+			.setTitle("Note Maker");
 
 		root.bind("<<TextWidgetCreated>>", &addTextBindings);
 
@@ -92,23 +91,25 @@ class Application : TkdApplication {
 		tabs = new Tabs(root, noteBook, noteBookTerminal, gui.textWidgetArray);
 		syntax = new Syntax();
 
+		root.setGeometry(pref.preferences.width, pref.preferences.height, 250, 50);
+
 		// create the menu bar at the top
 		auto menuBar = new MenuBar(root);
 
 		// sets up the "File" menu
 		auto fileMenu = new Menu(menuBar, "File", 0)
-			.addEntry("Open File...", &openFile, "Ctrl+O")
+			.addEntry("Open File...", &openFile, "Ctrl+F")
 			.addEntry("Open File In A New Tab", &openFileInNewTab, "Ctrl+Alt+F")
 			.addEntry("Save", &saveFile, "Ctrl+S")
 			.addEntry("Save As", &saveFileAs, "Ctrl+Alt+S")
 			.addSeparator()
-			.addEntry("New Tab", &tabs.createNewTab, "Ctrl+T")
+			.addEntry("New Tab", &tabs.createNewTab, "Ctrl+N")
 			.addEntry("Close Tab", &tabs.closeTab, "Ctrl+W")
 			.addEntry("Next Tab", &tabs.nextTab, "Ctrl+1")
 			.addEntry("Previous Tab", &tabs.previousTab, "Ctrl+2") 
 			.addEntry("Reopen Closed Tab", &tabs.reopenClosedTab, "Ctrl+3")
 			.addSeparator()
-			.addEntry("SideBySide", &sideBySideMode, "Ctrl+B")
+			.addEntry("Terminal", &sideBySideMode, "Ctrl+B")
 			.addSeparator()
 			.addEntry("About", &about)
 			.addSeparator()
@@ -152,6 +153,14 @@ class Application : TkdApplication {
 				lineNumbersTextWidget.setYView(lastYViewPos);
 			}
 			this.mainWindow.setIdleCommand(args.callback, 10);
+		});
+
+		root.setProtocolCommand(WindowProtocol.deleteWindow, delegate(CommandArgs args){
+			pref.preferences.width = root.getWidth();
+			pref.preferences.height = root.getHeight();
+			openPreferences(args);
+			pref.savePreferencesToFile(args);
+			exitApplication(args);
 		});
 
 		// checks if the preferences file exists if false creates one and tells you about it

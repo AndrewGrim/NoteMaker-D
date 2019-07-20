@@ -54,7 +54,9 @@ class Gui {
 						"[SELECTION BACKGROUND COLOR]\n#b8baba\n",
 						"[SAVE ON MODIFIED]\nfalse\n",
 						"[SHELL]\ndefault\n",
-						"[SYNTAX THEME]\ndefault");
+						"[SYNTAX THEME]\ndefault\n",
+						"[WIDTH]\n800\n",
+						"[HEIGHT]\n600");
 						f.close();
 
 						writeln("Failed to read preferences file! Preferences file created!");
