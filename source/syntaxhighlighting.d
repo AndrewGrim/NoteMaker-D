@@ -61,7 +61,6 @@ class Syntax {
 		}
 	}
 
-	// TODO syntax theme
 	public void configureTags(Text textWidget, string syntaxTheme) {
 		if (syntaxTheme.toLower == "gruvbox") {
 			// gruvbox
@@ -127,207 +126,114 @@ class Syntax {
 		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function", "class"];
 		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function", "class"];
 		string[] capitalLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+		string[] specialTkSymbols = ["[", "]", "{", "}", ";"];
+		string[] arrayTypes = ["string[", "char[", "int[", "float[", "double[", "bool["];
 
 		// TODO refactor the if blocks into separate functions so its not cancer on your eyes
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
 			// check for special tk characters
-			if (checkLineForToken(textWidget, line, "[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "[");
-				stopIndex = startIndex + 1;
-				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, "[");
-				stopIndex += 1;
-				for (int i = 1; i < numberOfPattern; i++) {
-					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "[") + stopIndex;
+			foreach (symbol; specialTkSymbols) {
+				if (checkLineForToken(textWidget, line, symbol) != -1) {
+					startIndex = checkLineForToken(textWidget, line, symbol);
 					stopIndex = startIndex + 1;
 					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+					numberOfPattern = numberOfPatternInLine(textWidget, line, symbol);
+					stopIndex += 1;
+					for (int i = 1; i < numberOfPattern; i++) {
+						startIndex = checkLineForNextToken(textWidget, line, stopIndex, symbol) + stopIndex;
+						stopIndex = startIndex + 1;
+						textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+					}
 				}
 			}
-			if (checkLineForToken(textWidget, line, "]") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "]");
-				stopIndex = startIndex + 1;
-				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, "]");
-				stopIndex += 1;
-				for (int i = 1; i < numberOfPattern; i++) {
-					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "]") + stopIndex;
-					stopIndex = startIndex + 1;
-					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				}
-			}
-			if (checkLineForToken(textWidget, line, "{") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "{");
-				stopIndex = startIndex + 1;
-				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, "{");
-				stopIndex += 1;
-				for (int i = 1; i < numberOfPattern; i++) {
-					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "{") + stopIndex;
-					stopIndex = startIndex + 1;
-					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				}
-			}
-			if (checkLineForToken(textWidget, line, "}") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "}");
-				stopIndex = startIndex + 1;
-				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, "}");
-				stopIndex += 1;
-				for (int i = 1; i < numberOfPattern; i++) {
-					startIndex = checkLineForNextToken(textWidget, line, stopIndex, "}") + stopIndex;
-					stopIndex = startIndex + 1;
-					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				}
-			}
-			if (checkLineForToken(textWidget, line, ";") != -1) {
-				startIndex = checkLineForToken(textWidget, line, ";");
-				stopIndex = startIndex + 1;
-				textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, ";");
-				stopIndex += 1;
-				for (int i = 1; i < numberOfPattern; i++) {
-					startIndex = checkLineForNextToken(textWidget, line, stopIndex, ";") + stopIndex;
-					stopIndex = startIndex + 1;
-					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				}
-			}
-			// check for string arrays
-			if (checkLineForToken(textWidget, line, "string[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "string[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
-				}
-			}
-			// check for char arrays
-			if (checkLineForToken(textWidget, line, "char[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "char[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
-				}
-			}
-			// check for int arrays
-			if (checkLineForToken(textWidget, line, "int[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "int[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
-				}
-			}
-			// check for float arrays
-			if (checkLineForToken(textWidget, line, "float[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "float[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
-				}
-			}
-			// check for double arrays
-			if (checkLineForToken(textWidget, line, "double[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "double[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
-				}
-			}
-			// check for bool arrays
-			if (checkLineForToken(textWidget, line, "bool[") != -1) {
-				startIndex = checkLineForToken(textWidget, line, "bool[");
-				stopIndex = startIndex.to!int + ("string".length).to!int;
-				arrayTypeStart = stopIndex + 1;
-				arrayTypeStop = checkLineForToken(textWidget, line, "]");
-				textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				if (arrayTypeStart != arrayTypeStop) {
-					textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+			// check for arrays
+			foreach (arrayType; arrayTypes) {
+				if (checkLineForToken(textWidget, line, arrayType) != -1) {
+					startIndex = checkLineForToken(textWidget, line, arrayType);
+					stopIndex = startIndex.to!int + ("string".length).to!int;
+					arrayTypeStart = stopIndex + 1;
+					arrayTypeStop = checkLineForToken(textWidget, line, "]");
+					textWidget.addTag("type", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
+					if (arrayTypeStart != arrayTypeStop) {
+						textWidget.addTag("type", startIndexFn(line, arrayTypeStart), stopIndexFn(line, arrayTypeStop));
+					}
 				}
 			}
 			// check for functions
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
-				// TODO add checks for ")", "[", "]", ";", ":" and maybe others
+				// TODO add checks for "[", "]", ";", ":"  "!"
 				string[] whitespace = textWidget.findAllInLine(" ", line);
 				string[] tab = textWidget.findAllInLine("\t", line);
-				string[] parentheses = textWidget.findAllInLine("(", line);
+				string[] openingParentheses = textWidget.findAllInLine("(", line);
+				string[] closingParentheses = textWidget.findAllInLine(")", line);
 				string[] dot = textWidget.findAllInLine(".", line);
+				string[][string] functionEnds;
+				int[string] lastSymbol;
 
 				int lastWhitespace = 0;
 				int lastTab = 0;
-				int lastParentheses = 0;
+				int lastOpeningParentheses = 0;
+				int lastClosingParentheses = 0;
 				int lastDot = 0;
-				foreach (item; whitespace) {
-					if (item.split(".")[1].to!int > lastWhitespace && item.split(".")[1].to!int < stopIndex) {
-						lastWhitespace = item.split(".")[1].to!int;
+
+				functionEnds["whitespace"] = whitespace;
+				functionEnds["tab"] = tab;
+				functionEnds["openingParentheses"] = openingParentheses;
+				functionEnds["closingParentheses"] = closingParentheses;
+				functionEnds["dot"] = dot;
+
+				lastSymbol["whitespace"] = lastWhitespace;
+				lastSymbol["tab"] = lastTab;
+				lastSymbol["openingParentheses"] = lastOpeningParentheses;
+				lastSymbol["closingParentheses"] = lastClosingParentheses;
+				lastSymbol["dot"] = lastDot;
+
+				foreach (key, value; functionEnds) {
+					foreach (item; value) {
+						if (item.split(".")[1].to!int > lastSymbol[key] && item.split(".")[1].to!int < stopIndex) {
+							lastSymbol[key] = item.split(".")[1].to!int;
+						}
 					}
 				}
-				foreach (item; tab) {
-					if (item.split(".")[1].to!int > lastTab && item.split(".")[1].to!int < stopIndex) {
-						lastTab = item.split(".")[1].to!int;
-					}
-				}
-				foreach (item; parentheses) {
-					if (item.split(".")[1].to!int > lastParentheses && item.split(".")[1].to!int < stopIndex) {
-						lastParentheses = item.split(".")[1].to!int;
-					}
-				}
-				foreach (item; dot) {
-					if (item.split(".")[1].to!int > lastDot && item.split(".")[1].to!int < stopIndex) {
-						lastDot = item.split(".")[1].to!int;
-					}
-				}
-				startIndex = max(lastWhitespace, lastTab, lastParentheses, lastDot) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
+
+				startIndex = max(lastSymbol["whitespace"],
+								 lastSymbol["tab"],
+								 lastSymbol["openingParentheses"],
+								 lastSymbol["closingParentheses"],
+								 lastSymbol["dot"]) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
 				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				stopIndex += 1; // add 1 to step over the opening parentheses since we dont highlight it with the function name
 				int numberOfParentheses = numberOfParenthesesInLine(textWidget, line);
 				for (int i = 1; i < numberOfParentheses; i++) {
 					stopIndex = checkLineForNextToken(textWidget, line, stopIndex, "(") + stopIndex;
-					whitespace = textWidget.findAllInLine(" ", line);
-					tab = textWidget.findAllInLine("\t", line);
-					parentheses = textWidget.findAllInLine("(", line);
-					dot = textWidget.findAllInLine(".", line);
 
-					lastWhitespace = 0;
-					lastTab = 0;
-					lastParentheses = 0;
-					lastDot = 0;
-					foreach (item; whitespace) {
-						if (item.split(".")[1].to!int > lastWhitespace && item.split(".")[1].to!int < stopIndex) {
-							lastWhitespace = item.split(".")[1].to!int;
+					functionEnds["whitespace"] = textWidget.findAllInLine(" ", line);
+					functionEnds["tab"] = textWidget.findAllInLine("\t", line);
+					functionEnds["openingParentheses"] = textWidget.findAllInLine("(", line);
+					functionEnds["closingParentheses"] = textWidget.findAllInLine(")", line);
+					functionEnds["dot"] = textWidget.findAllInLine(".", line);
+
+					lastSymbol["whitespace"] = 0;
+					lastSymbol["tab"] = 0;
+					lastSymbol["openingParentheses"] = 0;
+					lastSymbol["closingParentheses"] = 0;
+					lastSymbol["dot"] = 0;
+
+					foreach (key, value; functionEnds) {
+						foreach (item; value) {
+							if (item.split(".")[1].to!int > lastSymbol[key] && item.split(".")[1].to!int < stopIndex) {
+								lastSymbol[key] = item.split(".")[1].to!int;
+							}
 						}
 					}
-					foreach (item; tab) {
-						if (item.split(".")[1].to!int > lastTab && item.split(".")[1].to!int < stopIndex) {
-							lastTab = item.split(".")[1].to!int;
-						}
-					}
-					foreach (item; parentheses) {
-						if (item.split(".")[1].to!int > lastParentheses && item.split(".")[1].to!int < stopIndex) {
-							lastParentheses = item.split(".")[1].to!int;
-						}
-					}
-					foreach (item; dot) {
-						if (item.split(".")[1].to!int > lastDot && item.split(".")[1].to!int < stopIndex) {
-							lastDot = item.split(".")[1].to!int;
-						}
-					}
-					startIndex = max(lastWhitespace, lastTab, lastParentheses, lastDot) + 1;
+
+					startIndex = max(lastSymbol["whitespace"],
+								 lastSymbol["tab"],
+								 lastSymbol["openingParentheses"],
+								 lastSymbol["closingParentheses"],
+								 lastSymbol["dot"]) + 1;
 					textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-					stopIndex += 1;	
 				}
 			}
 			// check for class

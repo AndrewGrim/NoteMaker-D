@@ -136,8 +136,7 @@ class PreferencesWindow {
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
 		// sets up the keybindings for the preferences window
-		this.preferencesWindow.bind("<Escape>", &this.closePreferences); // Cancel Preferences
-		this.preferencesWindow.bind("<Return>", &this.pressButton); // Clicks Button
+		this.preferencesWindow.bind("<Escape>", &this.closePreferences); 		// Cancel Preferences
 
 		textWidgetArray = getTextWidgetArray; // updates the textWidgetArray
 	}
@@ -243,33 +242,6 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// sets the text widget options to the ones chosen in preferences
-	// FIXME seems redundant
-	public void applyPreferencesToWidgets() {
-		foreach (widget; textWidgetArray) {
-			widget.setFont(textMain.getFont());
-			widget.setForegroundColor(textMain.getForegroundColor());
-			widget.setBackgroundColor(textMain.getBackgroundColor());
-			widget.setInsertColor(textMain.getInsertColor());
-			widget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
-			widget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
-		}
-
-		terminalOutput.setFont(textMain.getFont());
-		terminalOutput.setForegroundColor(textMain.getForegroundColor());
-		terminalOutput.setBackgroundColor(textMain.getBackgroundColor());
-		terminalOutput.setInsertColor(textMain.getInsertColor());
-		terminalOutput.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
-		terminalOutput.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
-
-		lineNumbersTextWidget.setFont(textMain.getFont());
-		lineNumbersTextWidget.setForegroundColor(textMain.getForegroundColor());
-		lineNumbersTextWidget.setBackgroundColor(textMain.getBackgroundColor());
-		lineNumbersTextWidget.setInsertColor(textMain.getInsertColor());
-		lineNumbersTextWidget.setSelectionForegroundColor(textMain.getSelectionForegroundColor());
-		lineNumbersTextWidget.setSelectionBackgroundColor(textMain.getSelectionBackgroundColor());
-	}
-
 	// saves the current widget values to the "preferences.txt" file
 	public void savePreferencesToFile(CommandArgs args) {
 		auto f = File(preferences.preferencesFile, "w");
@@ -291,8 +263,6 @@ class PreferencesWindow {
 		preferences.syntaxTheme = syntaxTheme.getValue();
 		preferences.opacity = opacitySlider.getValue();
 
-		applyPreferencesToWidgets();
-
 		writeln("Preferences saved!");
 		root.setTitle("Preferences saved!");
 		root.generateEvent("<<ResetTitle>>");
@@ -305,21 +275,6 @@ class PreferencesWindow {
 		this.preferencesWindow.destroy();
 
 		writeln("Preferences window closed!");
-	}
-
-	// allows you to use the "Return" key to push buttons within the preferences window
-	// you can also use "Space" which is the default
-	// FIXME if i want to keep this then change to invoke
-	public void pressButton(CommandArgs args) {
-		if (changeFont.inState(["focus"])) {
-			openFontDialog(args);
-		} else if (changeForegroundColor.inState(["focus"])) {
-			openForegroundColorDialog(args);
-		} else if (changeBackgroundColor.inState(["focus"])) {
-			openBackgroundColorDialog(args);
-		} else if (changeInsertColor.inState(["focus"])) {
-			openInsertColorDialog(args);
-		}
 	}
 
 	// changes the opacity based off of the scale widget's value

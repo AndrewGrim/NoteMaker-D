@@ -118,26 +118,28 @@ class Application : TkdApplication {
 		auto editMenu = new Menu(menuBar, "Edit", 0)
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
-			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L");
+			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L")
+			.addSeparator()
+			.addEntry("Indent", &indent, "Tab")
+			.addEntry("Unindent", &unindent, "Shift-Tab");
 		
 		// sets opacity on application boot
 		root.setOpacity(gui.preferences.opacity);
 
 		// sets up the keybindings
-		root.bind("<Control-f>", &openFile); // Open
-		root.bind("<Control-Alt-f>", &openFileInNewTab); // Open File In A New Tab
-		root.bind("<Control-s>", &saveFile); // Save
-		root.bind("<Control-Alt-s>", &saveFileAs); // Save As
-		root.bind("<Control-n>", &tabs.createNewTab); // New Tab
-		root.bind("<Control-w>", &tabs.closeTab); // Close Tab
-		root.bind("<Control-KeyPress-1>", &tabs.nextTab); // Next Tab
-		root.bind("<Control-KeyPress-2>", &tabs.previousTab); // Previous Tab
-		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab); // Reopen Closed Tab
-		root.bind("<Control-p>", &openPreferences); // Preferences
-		root.bind("<Control-l>", &manualHighlight); // Syntax Highlight
-		root.bind("<Control-b>", &sideBySideMode); // Enable/Disable SideBySide Mode
-		//root.bind("<Control-h>", &help); //help control-h, as either a message or a help file // TODO help open new tab and load the readme
-		root.bind("<Control-q>", &exitApplication); // Quit
+		root.bind("<Control-f>", &openFile); 											// Open
+		root.bind("<Control-Alt-f>", &openFileInNewTab); 								// Open File In A New Tab
+		root.bind("<Control-s>", &saveFile); 											// Save
+		root.bind("<Control-Alt-s>", &saveFileAs); 										// Save As
+		root.bind("<Control-n>", &tabs.createNewTab);									// New Tab
+		root.bind("<Control-w>", &tabs.closeTab);										// Close Tab
+		root.bind("<Control-KeyPress-1>", &tabs.nextTab);								// Next Tab
+		root.bind("<Control-KeyPress-2>", &tabs.previousTab);							// Previous Tab
+		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab);						// Reopen Closed Tab
+		root.bind("<Control-p>", &openPreferences);										// Preferences Window
+		root.bind("<Control-l>", &manualHighlight);										// Syntax Highlight
+		root.bind("<Control-b>", &sideBySideMode);										// Enable/Disable Terminal
+		root.bind("<Control-q>", &exitApplication);										// Quit
 
 		// virtual event functions
 		root.bind("<<ResetTitle>>", &resetTitle);
@@ -175,6 +177,7 @@ class Application : TkdApplication {
 	// if selection is NOT empty calls undo to counteract the symbol replacing the selection, then adds the pair of symbols around the selection range
 	public void insertPair(CommandArgs args) { 
 		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
+		selectionRange = textWidget.getTagRanges("sel");
 		textWidget.setReadOnly(false);
 		if (!selectionRange.empty) {
 			string start = selectionRange[0];
@@ -236,7 +239,6 @@ class Application : TkdApplication {
 		} else {
 			writeln("unhandled key : ", args.uniqueData);
 		}
-		selectionRange = textWidget.getTagRanges("sel");
 	}
 
 	public void updateLines(CommandArgs args) {
@@ -341,11 +343,7 @@ class Application : TkdApplication {
 	// adds the indentation bindings to all the text widgets so that they can be actually used
 	public void addTextBindings(CommandArgs args) {
 		gui.textMain.bind("<KeyPress-Tab>", &delay);
-		version (Windows) {
-			gui.textMain.bind("<Shift-Tab>", &unindent);
-		} else {
-			gui.textMain.bind("<Control-`>", &unindent);
-		}
+		gui.textMain.bind("<Shift-Tab>", &unindent);
 		gui.textMain.bind("<KeyPress-bracketleft>", &delay);
 		gui.textMain.bind("<KeyPress-braceleft>", &delay);
 		gui.textMain.bind("<KeyPress-parenleft>", &delay);
@@ -358,11 +356,7 @@ class Application : TkdApplication {
 			foreach (widget; tabs.getTextWidgetArray()) {
 				widget.bind("<<Modified>>", &saveOnModified);
 				widget.bind("<KeyPress-Tab>", &delay);
-				version (Windows) {
-					widget.bind("<Shift-Tab>", &unindent);
-				} else {
-					widget.bind("<Control-`>", &unindent);
-				}
+				widget.bind("<Shift-Tab>", &unindent);
 				widget.bind("<KeyPress-bracketleft>", &delay);
 				widget.bind("<KeyPress-braceleft>", &delay);
 				widget.bind("<KeyPress-parenleft>", &delay);
@@ -376,6 +370,7 @@ class Application : TkdApplication {
 
 	// indents the text, works with both single lines and selection
 	public void indent(CommandArgs args) {
+		selectionRange = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getTagRanges("sel");
 		root.cancelAfter(root.after(&changeTitle, 1500)); // cancels the change title event which would cause indent to trigger again if called before the title event finished
 		if (io.getOpeningFile) {
 			io.setOpeningFile(false);
@@ -425,13 +420,12 @@ class Application : TkdApplication {
 			foreach (textWidget; tabs.getTextWidgetArray()) {
 				if (textWidget.getModified()) { 
 					if (!io.getOpeningFile && syntax.highlightOnLoad) {
-						io.setOpeningFile(false); // WTF this seems dumb
 						syntax.setHighlightOnLoad(false);
 					} else if (!io.getOpeningFile) {
-						io.setOpeningFile(false); // WTF this seems dumb
+						// do nothing
 					} else {
 						io.saveFile(args, noteBook, tabs.getTextWidgetArray());
-						// FIXME save on modified only works once you load the file doesnt work when creating a new file
+						// FIXME save on modified only works once you load the file
 					}
 
 					textWidget.setModified(false);

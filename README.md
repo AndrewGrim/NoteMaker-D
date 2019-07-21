@@ -1,6 +1,6 @@
 # NoteMaker-D
 
-What started as an application for making notes, overtime became a pretty decent code editor.
+What started as an application for making notes, over time became a pretty decent code editor.
 
 Features include:
 
@@ -29,9 +29,9 @@ Features include:
 - Preferences window with options for changing the font, fg, bg, save on modified toggle, opacity slide, terminal shell and syntax theme.
 
 - Indent and unindent the entire selection by using Tab and Shift-Tab respectively.
-  - Unless you're on Linux where unindent is Control-` !?!? Why? Good question! I don't know! Because Shift-Tab didn't work.
+  - Unless you're on Linux where the binding doesn't work but you can use the edit menu instead.
 
-- You can change tabs using Control-Tab and Control-Shift-Tab these are default.
+- You can change tabs using Control-Tab and Control-Shift-Tab these are default on Windows.
   - Alternatively Control-1 and Control-2 use my function which automatically focuses the text widget within so you can start typing.
 
 - The default option for terminal uses cmd.exe on Windows and /bin/sh on Linux.
