@@ -57,4 +57,6 @@ or
 
     dub --build=release
 
-![screenshots](images/screenshots.gif)
+![screenshot](images/default.png)
+
+![screenshot](images/gruvbox.png)
