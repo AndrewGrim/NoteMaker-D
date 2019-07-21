@@ -218,6 +218,7 @@ class Application : TkdApplication {
 		});
 
 		// Checks if the preferences file exists if false creates one and tells you about it.
+		// FIXME doesn't work atm, must have changed when I changed the way I read the file.
 		if (!gui.preferences.preferencesFileExists) {
 			const MessageDialog dialog = new MessageDialog(this.root, "Preferences File") // @suppress(dscanner.suspicious.unused_variable)
 				.setDetailMessage("Preferences file could not be found and has been created!")
@@ -503,7 +504,7 @@ class Application : TkdApplication {
 	/// Automatically highlights the defined syntax.
 	/// That is when the file is being saved or loaded and the extension matches one of the supported ones.
 	public void automaticHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme);
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme, gui.terminalOutput);
 		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
 		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}
@@ -511,7 +512,7 @@ class Application : TkdApplication {
 	/// Manually highlights the defined syntax bypassing the supported extensions check, results will vary.
 	/// Can be used to redo the highlights after changes to file without saving or to apply the newly selected theme.
 	public void manualHighlight(CommandArgs args) {
-		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme, true);
+		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme, gui.terminalOutput, true);
 		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
 		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}

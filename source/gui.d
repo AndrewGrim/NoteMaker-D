@@ -132,6 +132,7 @@ class Gui {
 						.setSelectionForegroundColor(textMain.getSelectionForegroundColor())
 						.setWidth(1) // to prevent scrollbars from dissappearing
 						.setHeight(1) // to prevent scrollbars from dissappearing
+						.setReadOnly()
 						.pack(0, 0, GeometrySide.left, GeometryFill.both, AnchorPosition.center, true);
 					
 

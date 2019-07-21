@@ -26,7 +26,7 @@ class Syntax {
 	/// Main method. Checks if the file extension is supported. If so proceeds.
 	/// Goes through all the syntax text files and uses Tk's Text's built in search to highlight keywords, types, numbers etc.
 	/// Then does a second pass. Going line by line to highlight everything else.
-	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, string syntaxTheme, bool manual = false) { // @suppress(dscanner.suspicious.unused_parameter) // @suppress(dscanner.style.long_line)
+	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, string syntaxTheme, Text terminalWidget, bool manual = false) { // @suppress(dscanner.suspicious.unused_parameter) // @suppress(dscanner.style.long_line)
 		string[] supportedLanguages = [".d", ".c", ".cpp", ".h", ".hpp"];
 		if (supportedLanguages.canFind((noteBook.getTabText(noteBook.getCurrentTabId())).extension)
 			|| manual == true) {
@@ -34,7 +34,7 @@ class Syntax {
 			Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
 			textWidget.setForegroundColor("#ffffff");
-			configureTags(textWidget, syntaxTheme);
+			configureTags(textWidget, syntaxTheme, terminalWidget);
 			string[] allTags = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string",
 								"escapeCharacter", "function", "comment", "class"];
 			foreach (tag; allTags) {
@@ -67,7 +67,7 @@ class Syntax {
 	}
 
 	/// Adds all the required tags to the Text widget. Tag options are different depending on the theme.
-	public void configureTags(Text textWidget, string syntaxTheme) {
+	public void configureTags(Text textWidget, string syntaxTheme, Text terminalWidget) {
 		if (syntaxTheme.toLower == "gruvbox") {
 			// gruvbox
 			textWidget
@@ -86,6 +86,10 @@ class Syntax {
 				.configTag("function", "-foreground #b8bb26")						// green
 				.configTag("class", "-foreground #fabd2f")							// yellow
 				.configTag("tabWidth", "-tabs {1c}");								// half of default
+
+			terminalWidget
+				.setForegroundColor("#ebdbb2")
+				.setBackgroundColor("#282828");
 		} else {
 			// default
 			textWidget
@@ -104,6 +108,10 @@ class Syntax {
 				.configTag("function", "-foreground #2a78f5")						// blue
 				.configTag("class", "-foreground #fadc0f")							// yellow
 				.configTag("tabWidth", "-tabs {1c}");								// half of default
+			
+			terminalWidget
+				.setForegroundColor("#ffffff")
+				.setBackgroundColor("#000000");
 		}	
 	}
 
