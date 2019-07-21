@@ -1,7 +1,10 @@
 import os
 
 localDir = os.path.abspath(os.path.dirname(__file__))
-os.system("cd " + localDir + " & dub build --build=docs & dir")
+try:
+	os.system("cd " + localDir + " & dub build --build=docs & dir")
+except:
+	os.system("cd " + localDir + " && dub build --build=docs & dir")
 
 path = localDir + "/source"
 sourceContents = os.listdir(path)
