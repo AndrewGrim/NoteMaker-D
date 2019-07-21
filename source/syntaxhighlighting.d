@@ -162,12 +162,17 @@ class Syntax {
 			// check for functions
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
-				// TODO add checks for "[", "]", ";", ":"  "!"
 				string[] whitespace = textWidget.findAllInLine(" ", line);
 				string[] tab = textWidget.findAllInLine("\t", line);
 				string[] openingParentheses = textWidget.findAllInLine("(", line);
 				string[] closingParentheses = textWidget.findAllInLine(")", line);
 				string[] dot = textWidget.findAllInLine(".", line);
+				string[] semicolon = textWidget.findAllInLine(";", line);
+				string[] colon = textWidget.findAllInLine(":", line);
+				string[] exclamation = textWidget.findAllInLine("!", line);
+				string[] openingBrackets = textWidget.findAllInLine("[", line);
+				string[] closingBrackets = textWidget.findAllInLine("]", line);
+				string[] newline = textWidget.findAllInLine("\n", line);
 				string[][string] functionEnds;
 				int[string] lastSymbol;
 
@@ -176,18 +181,36 @@ class Syntax {
 				int lastOpeningParentheses = 0;
 				int lastClosingParentheses = 0;
 				int lastDot = 0;
+				int lastSemicolon = 0;
+				int lastColon = 0;
+				int lastExclamation = 0;
+				int lastOpeningBrackets = 0;
+				int lastClosingBrackets = 0;
+				int lastNewline = 0;
 
 				functionEnds["whitespace"] = whitespace;
 				functionEnds["tab"] = tab;
 				functionEnds["openingParentheses"] = openingParentheses;
 				functionEnds["closingParentheses"] = closingParentheses;
 				functionEnds["dot"] = dot;
+				functionEnds["semicolon"] = semicolon;
+				functionEnds["colon"] = colon;
+				functionEnds["exclamation"] = exclamation;
+				functionEnds["openingBrackets"] = openingBrackets;
+				functionEnds["closingBrackets"] = closingBrackets;
+				functionEnds["newline"] = newline;
 
 				lastSymbol["whitespace"] = lastWhitespace;
 				lastSymbol["tab"] = lastTab;
 				lastSymbol["openingParentheses"] = lastOpeningParentheses;
 				lastSymbol["closingParentheses"] = lastClosingParentheses;
 				lastSymbol["dot"] = lastDot;
+				lastSymbol["semicolon"] = lastSemicolon;
+				lastSymbol["colon"] = lastColon;
+				lastSymbol["exclamation"] = lastExclamation;
+				lastSymbol["openingBrackets"] = lastOpeningBrackets;
+				lastSymbol["closingBrackets"] = lastClosingBrackets;
+				lastSymbol["newline"] = lastNewline;
 
 				foreach (key, value; functionEnds) {
 					foreach (item; value) {
@@ -201,24 +224,34 @@ class Syntax {
 								 lastSymbol["tab"],
 								 lastSymbol["openingParentheses"],
 								 lastSymbol["closingParentheses"],
-								 lastSymbol["dot"]) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
+								 lastSymbol["dot"],
+								 lastSymbol["semicolon"],
+								 lastSymbol["colon"],
+								 lastSymbol["exclamation"],
+								 lastSymbol["openingBrackets"],
+								 lastSymbol["closingBrackets"],
+								 lastSymbol["newline"],
+								 ); 
+				if (startIndex != 0) {
+					startIndex += 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
+				}
 				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				stopIndex += 1; // add 1 to step over the opening parentheses since we dont highlight it with the function name
 				int numberOfParentheses = numberOfParenthesesInLine(textWidget, line);
 				for (int i = 1; i < numberOfParentheses; i++) {
 					stopIndex = checkLineForNextToken(textWidget, line, stopIndex, "(") + stopIndex;
 
-					functionEnds["whitespace"] = textWidget.findAllInLine(" ", line);
-					functionEnds["tab"] = textWidget.findAllInLine("\t", line);
-					functionEnds["openingParentheses"] = textWidget.findAllInLine("(", line);
-					functionEnds["closingParentheses"] = textWidget.findAllInLine(")", line);
-					functionEnds["dot"] = textWidget.findAllInLine(".", line);
-
-					lastSymbol["whitespace"] = 0;
-					lastSymbol["tab"] = 0;
-					lastSymbol["openingParentheses"] = 0;
-					lastSymbol["closingParentheses"] = 0;
-					lastSymbol["dot"] = 0;
+					lastSymbol["whitespace"] = lastWhitespace;
+					lastSymbol["tab"] = lastTab;
+					lastSymbol["openingParentheses"] = lastOpeningParentheses;
+					lastSymbol["closingParentheses"] = lastClosingParentheses;
+					lastSymbol["dot"] = lastDot;
+					lastSymbol["semicolon"] = lastSemicolon;
+					lastSymbol["colon"] = lastColon;
+					lastSymbol["exclamation"] = lastExclamation;
+					lastSymbol["openingBrackets"] = lastOpeningBrackets;
+					lastSymbol["closingBrackets"] = lastClosingBrackets;
+					lastSymbol["newline"] = lastNewline;
 
 					foreach (key, value; functionEnds) {
 						foreach (item; value) {
@@ -232,7 +265,14 @@ class Syntax {
 								 lastSymbol["tab"],
 								 lastSymbol["openingParentheses"],
 								 lastSymbol["closingParentheses"],
-								 lastSymbol["dot"]) + 1;
+								 lastSymbol["dot"],
+								 lastSymbol["semicolon"],
+								 lastSymbol["colon"],
+								 lastSymbol["exclamation"],
+								 lastSymbol["openingBrackets"],
+								 lastSymbol["closingBrackets"],
+								 lastSymbol["newline"],
+								 ) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
 					textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 			}

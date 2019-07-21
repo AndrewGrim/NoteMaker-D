@@ -1,2 +1,8 @@
-make docs
-implement testing - assert
+TODO:
+	make docs
+	implement testing - assert
+	scroll through recent terminal commands using arrows
+	refactor the if blocks into separate functions so its not cancer on your eyes
+	
+FIXME:
+	save on modified only works once you load the file
