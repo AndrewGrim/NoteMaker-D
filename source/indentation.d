@@ -5,8 +5,10 @@ import std.stdio;
 import std.string;
 import std.conv;
 
+/// Class for adding and removing indentation from text.
 class Indentation {
 
+	/// Indent the selected text unless selection is empty, in which case indent at insert cursor.
 	public static void indent(NoteBook noteBook, Text[] textWidgetArray, string[] selectionRange) {
 		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 		string insertLine = ((textWidget.getInsertCursorIndex().split("."))[0]) ~ ".0";
@@ -15,8 +17,8 @@ class Indentation {
 			string start = selectionRange[0];
 			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
-				int startLine = start.split(".")[0].to!int;
-				int endLine = end.split(".")[0].to!int;
+				const int startLine = start.split(".")[0].to!int;
+				const int endLine = end.split(".")[0].to!int;
 				for (int line = startLine; line <= endLine; line++) {
 					string tabLine = line.to!string ~ ".0";
 					textWidget.setReadOnly(false);
@@ -33,6 +35,7 @@ class Indentation {
 		textWidget.focus();
 	}
 
+	/// Unindent the selected text unless selection is empty, in which case unindent at insert cursor.
 	public static void unindent(NoteBook noteBook, Text[] textWidgetArray) {
 		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 		string insertLine = ((textWidget.getInsertCursorIndex().split("."))[0]) ~ ".0";
@@ -51,14 +54,14 @@ class Indentation {
 			string start = selectionRange[0];
 			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
-				int startLine = start.split(".")[0].to!int;
-				int endLine = end.split(".")[0].to!int;
+				const int startLine = start.split(".")[0].to!int;
+				const int endLine = end.split(".")[0].to!int;
 				for (int line = startLine; line <= endLine; line++) {
 					string tabLine = line.to!string ~ ".0";
 					string tabLineEnd = line.to!string ~ ".end";
 					if (textWidget.find("\t", tabLine, tabLineEnd).length != 0) {
 						string indexOfTabInLine = textWidget.find("\t", tabLine, tabLineEnd);
-						string endIndexOfTabInLine = indexOfTabInLine.split(".")[0] ~ "." ~ ((indexOfTabInLine.split(".")[1].to!int) + 1).to!string;
+						string endIndexOfTabInLine = indexOfTabInLine.split(".")[0] ~ "." ~ ((indexOfTabInLine.split(".")[1].to!int) + 1).to!string; // @suppress(dscanner.style.long_line)
 						textWidget.setReadOnly(false);
 						textWidget.deleteText(indexOfTabInLine, endIndexOfTabInLine);
 					}

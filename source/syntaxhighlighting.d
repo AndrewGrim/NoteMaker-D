@@ -230,7 +230,7 @@ class Syntax {
 								 lastSymbol["exclamation"],
 								 lastSymbol["openingBrackets"],
 								 lastSymbol["closingBrackets"],
-								 lastSymbol["newline"],
+								 lastSymbol["newline"]
 								 ); 
 				if (startIndex != 0) {
 					startIndex += 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
@@ -271,7 +271,7 @@ class Syntax {
 								 lastSymbol["exclamation"],
 								 lastSymbol["openingBrackets"],
 								 lastSymbol["closingBrackets"],
-								 lastSymbol["newline"],
+								 lastSymbol["newline"]
 								 ) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
 					textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}

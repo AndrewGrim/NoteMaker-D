@@ -8,18 +8,28 @@ import std.path;
 import std.exception;
 import std.conv;
 
-// saving and opening methods
+/// Class for opening and saving files.
 class InputOutput {
 
-	// variables
+	/// Variable used to access the main window.
 	Window root;
+
+	/// The full path to the file thats going to be opened.
 	string fileToOpen;
+
+	/// The full path to the file thats going to be saved.
 	string fileToSave;
+
+	/// Associative array storing the full file path value under the fileName + extension key.
 	string[string] tabNameFilePath;
+
+	/// Variables to check if a file is being opened.
 	bool openingFile;
+
+	/// The Text widget containing the line numbers.
 	Text lineNumbersTextWidget;
 
-	// constructor
+	/// Constructor.
 	this(Window root, Text lineNumbersTextWidget) {
 		this.root = root;
 		this.lineNumbersTextWidget = lineNumbersTextWidget;
@@ -33,10 +43,11 @@ class InputOutput {
 		openingFile = state;
 	}
 
-	// opens the openFile dialog allowing you to choose the file to load
-	public void openOpenFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {
-		
-		auto openFile = new OpenFileDialog("Open a file")
+	/// Opens the openFile dialog allowing you to choose the file to load.
+	public void openOpenFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) { // @suppress(dscanner.suspicious.unused_parameter)
+		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
+
+		OpenFileDialog openFile = new OpenFileDialog("Open a file")
 			.setMultiSelection(false)
 			.setDefaultExtension(".txt")
 			.addFileType("{{All files} {*}}")
@@ -54,7 +65,7 @@ class InputOutput {
 
 		} else {
 
-			auto f = File(fileToOpen, "r");
+			File f = File(fileToOpen, "r");
 			
 			string fileContent;
 
@@ -70,16 +81,17 @@ class InputOutput {
 				removeLines = 2;
 			}
 
-			textWidgetArray[noteBook.getCurrentTabId()].setReadOnly(false);
-			textWidgetArray[noteBook.getCurrentTabId()].clear();
-			textWidgetArray[noteBook.getCurrentTabId()].insertText(0, 0, fileContent, "tabWidth");
+			textWidget.setReadOnly(false);
+			textWidget.clear();
+			textWidget.insertText(0, 0, fileContent, "tabWidth");
 			
 			noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToOpen));
 			root.setTitle("File opened: " ~ fileToOpen);
 			tabNameFilePath[baseName(fileToOpen)] = fileToOpen;
 
-			string numOfLines = ((textWidgetArray[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0].to!int) - removeLines).to!string;
-			textWidgetArray[noteBook.getCurrentTabId()].deleteText(numOfLines ~ ".0", "end");
+			// The block below sets the line numbers based on file contents.
+			string numOfLines = (((textWidget.getNumberOfLines().split(".")[0]).to!int) - removeLines).to!string;
+			textWidget.deleteText(numOfLines ~ ".0", "end");
 
 			string lineNumbers;
 			for (int i = 1; i < numOfLines.to!int; i++) {
@@ -95,9 +107,9 @@ class InputOutput {
 			} else {
 				lineNumbersTextWidget.setWidth((numOfLines.length).to!int);
 			}
-			lineNumbersTextWidget.setFont(textWidgetArray[noteBook.getCurrentTabId()].getFont());
-			lineNumbersTextWidget.setForegroundColor(textWidgetArray[noteBook.getCurrentTabId()].getForegroundColor());
-			lineNumbersTextWidget.setBackgroundColor(textWidgetArray[noteBook.getCurrentTabId()].getBackgroundColor());
+			lineNumbersTextWidget.setFont(textWidget.getFont());
+			lineNumbersTextWidget.setForegroundColor(textWidget.getForegroundColor());
+			lineNumbersTextWidget.setBackgroundColor(textWidget.getBackgroundColor()); 
 			lineNumbersTextWidget.clear();
 			lineNumbersTextWidget.appendText(lineNumbers, "alignCenter");
 			lineNumbersTextWidget.setReadOnly();
@@ -107,10 +119,11 @@ class InputOutput {
 		}
 	}	
 
-	// opens the saveFile dialog allowing you to choose where to save
-	public void openSaveFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {	
+	/// Opens the saveFile dialog allowing you to choose where to save.
+	public void openSaveFileDialog(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) { // @suppress(dscanner.suspicious.unused_parameter)	
+		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
-		auto saveFile = new SaveFileDialog()
+		SaveFileDialog saveFile = new SaveFileDialog()
 			.setConfirmOverwrite(true)
 			.setDefaultExtension(".dmo")
 			.addFileType("{{All files} {*}}")
@@ -127,9 +140,9 @@ class InputOutput {
 
 		} else {
 
-			auto f = File(fileToSave, "w");
+			File f = File(fileToSave, "w");
 
-			f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
+			f.write(textWidget.getText());
 
 			f.close();
 
@@ -137,13 +150,15 @@ class InputOutput {
 			root.setTitle("File saved: " ~ fileToSave);
 			tabNameFilePath[baseName(fileToSave)] = fileToSave;
 
-			textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
+			textWidget.addTag("tabWidth", "1.0", "end");
 			root.generateEvent("<<ResetTitle>>");
 		}
 	}
 
-	// saves the file
+	/// Saves the file to the path stored from loading or saving the file previously.
+	/// If the path doesn't exist calls openSaveFileDialog().
 	public void saveFile(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray) {
+		Text textWidget = textWidgetArray[noteBook.getCurrentTabId()];
 
 		if (noteBook.getTabText(noteBook.getCurrentTabId()) == "Main File" || 
 			noteBook.getTabText(noteBook.getCurrentTabId()) == "New File") {
@@ -155,16 +170,16 @@ class InputOutput {
 			} else {
 				writeln("saving: ", fileToSave);
 		
-				auto f = File(fileToSave, "w");
+				File f = File(fileToSave, "w");
 
-				f.write(textWidgetArray[noteBook.getCurrentTabId()].getText());
+				f.write(textWidget.getText());
 
 				f.close();
 
 				noteBook.setTabText(noteBook.getCurrentTabId(), baseName(fileToSave));
 				root.setTitle("File saved: " ~ fileToSave);
 
-				textWidgetArray[noteBook.getCurrentTabId()].addTag("tabWidth", "1.0", "end");
+				textWidget.addTag("tabWidth", "1.0", "end");
 				root.generateEvent("<<ResetTitle>>");
 			}
 		}

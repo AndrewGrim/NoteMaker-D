@@ -7,59 +7,93 @@ import std.string;
 import std.algorithm;
 import std.process;
 import std.exception;
-import preferenceswindow, inputoutput, gui, tabs, syntaxhighlighting, indentation; // source imports
+import preferenceswindow, inputoutput, gui, tabs, syntaxhighlighting, indentation; // Source imports.
 
-// NoteMaker application.
+/// NoteMaker application.
 class Application : TkdApplication {
 
-	// variables
+	/// The main window of the application.
 	Window root;
-	Gui gui;
-	PreferencesWindow pref;
-	InputOutput io;
-	Tabs tabs;
-	Syntax syntax;
-	NoteBook noteBook;
-	bool applicationInitialization = true;
-	bool secondWidget = false;
-	int sideStatus;
-	Frame main;
-	Frame side;
-	NoteBook noteBookTerminal;
-	PanedWindow sideBySide;
-	Text lineNumbersTextWidget;
-	string openingPairKey;
-	string closingPairKey;
-	string[] selectionRange;
-	string selectionText;
 
-	// initialize user interface
+	/// Variable used for accessing the Gui class.
+	Gui gui;
+
+	/// Variable used for accessing the PreferencesWindow class.
+	PreferencesWindow pref;
+
+	/// Variable used for accessing the InputOutput class.
+	InputOutput io;
+
+	/// Variable used for accessing the Tabs class.
+	Tabs tabs;
+
+	/// Variable used for accessing the Syntax class.
+	Syntax syntax;
+
+	/// The main NoteBook widget. Contains all the open files in different tabs.
+	NoteBook noteBook;
+
+	/// Variable to prevent accessing objects that don't exist yet.
+	bool applicationInitialization = true;
+
+	/// Variable to determine whether the terminal PanedWindow is visible.
+	int sideStatus;
+
+	/// The frame that contains the NoteBook with all the files, and the NoteBook with line numbers.
+	Frame main;
+
+	/// The frame that contains the NoteBook with the terminal.
+	Frame side;
+
+	/// NoteBook widget for the terminal. Uses a NoteBook instead of a standalone Text widget for symetry.
+	NoteBook noteBookTerminal;
+
+	/// The top container for everything to allow you to resize the terminal using the sash.
+	PanedWindow sideBySide;
+
+	/// Text widget containing the line numbers of the currently visible file.
+	Text lineNumbersTextWidget;
+
+	/// String containing the opening symbol from a pair of brackets, braces, quotes etc.
+	string openingPairKey;
+
+	/// String containing the closing symbol from a pair of brackets, braces, quotes etc.
+	string closingPairKey;
+
+	/// An array containing the indices for the start and end of the selected text.
+	string[] selectionRange;
+	
+	/// Initialize user interface, instantiate the class objects etc.
 	override public void initInterface() {
 
-		// sets up root
+		// Assigns and sets up root.
 		this.root = mainWindow()
 			.setDefaultIcon([new EmbeddedPng!("NoteMaker.png")])
 			.setTitle("Note Maker");
 
+		// Creates virutal event that will be generated whenever a new Text widget is created. Used for assigning bindings to Text widgets.
 		root.bind("<<TextWidgetCreated>>", &addTextBindings);
 
-		// makes the code in "gui.d" usable in "main.d"
+		// Makes the code in "gui.d" usable in "main.d"
 		gui = new Gui(root);
 
 		this.sideBySide = new PanedWindow(root, "horizontal");
 
 		this.main = new Frame(sideBySide);
 			noteBook = new NoteBook(main);
-				auto mainPane = gui.createMainPane();
-			auto noteBookLines = new NoteBook(main);
-				auto linesPane = new Frame();
+				Frame mainPane = gui.createMainPane();
 
-			// creates the text widget containing the line numbers
+			// The NoteBook widget containing the line numbers Text widget and the padding Label.
+			NoteBook noteBookLines = new NoteBook(main);
+				Frame linesPane = new Frame();
+
+			// Creates the Text widget containing the line numbers.
 			this.lineNumbersTextWidget = new Text(linesPane)
 				.configTag("alignCenter", "-justify center")
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
-			auto paddingLabel = new Label(linesPane, " ")
+			// Label to make the line numbers and the text files the same size.
+			const Label paddingLabel = new Label(linesPane, " ") // @suppress(dscanner.suspicious.unused_variable)
 				.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
 
 			noteBookLines
@@ -71,33 +105,45 @@ class Application : TkdApplication {
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 		this.side = new Frame(sideBySide);
-			noteBookTerminal = new NoteBook(side);
-				auto terminalPane = gui.createTerminalPane();
+			this.noteBookTerminal = new NoteBook(side);
+				Frame terminalPane = gui.createTerminalPane();
 			noteBookTerminal
 				.addTab("Terminal", terminalPane)
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 		
-		this.sideBySide
+		sideBySide
 			.addPane(main)
 			.setPaneWeight(0, 20)
 			.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 		applicationInitialization = false;
-		secondWidget = true;
 
-		// makes the code in other files usable in "main.d"
-		io = new InputOutput(root, lineNumbersTextWidget);
-		pref = new PreferencesWindow(root, gui.textMain, gui.preferences, gui.textWidgetArray, gui.terminalOutput, lineNumbersTextWidget);
-		tabs = new Tabs(root, noteBook, noteBookTerminal, gui.textWidgetArray);
+		// Makes the code in other files usable in "main.d".
+		io = new InputOutput(root, 
+							lineNumbersTextWidget);
+
+		pref = new PreferencesWindow(root, 
+									 gui.textMain,
+									 gui.preferences,
+									 gui.textWidgetArray, 
+									 gui.terminalOutput,
+									 lineNumbersTextWidget);
+
+		tabs = new Tabs(root, 
+						noteBook, 
+						noteBookTerminal, 
+						gui.textWidgetArray);
+
 		syntax = new Syntax();
 
+		// Set the size of the main window to whatever the dimensions were when the program was previously closed.
 		root.setGeometry(pref.preferences.width, pref.preferences.height, 250, 50);
 
-		// create the menu bar at the top
-		auto menuBar = new MenuBar(root);
+		// Create the menu bar at the top.
+		MenuBar menuBar = new MenuBar(root);
 
-		// sets up the "File" menu
-		auto fileMenu = new Menu(menuBar, "File", 0)
+		// Sets up the "File" menu.
+		const Menu fileMenu = new Menu(menuBar, "File", 0) // @suppress(dscanner.suspicious.unused_variable)
 			.addEntry("Open File...", &openFile, "Ctrl+F")
 			.addEntry("Open File In A New Tab", &openFileInNewTab, "Ctrl+Alt+F")
 			.addEntry("Save", &saveFile, "Ctrl+S")
@@ -109,13 +155,14 @@ class Application : TkdApplication {
 			.addEntry("Previous Tab", &tabs.previousTab, "Ctrl+2") 
 			.addEntry("Reopen Closed Tab", &tabs.reopenClosedTab, "Ctrl+3")
 			.addSeparator()
-			.addEntry("Terminal", &sideBySideMode, "Ctrl+B")
+			.addEntry("Terminal", &terminalPanel, "Ctrl+B")
 			.addSeparator()
 			.addEntry("About", &about)
 			.addSeparator()
 			.addEntry("Quit", &exitApplication, "Ctrl+Q");
 
-		auto editMenu = new Menu(menuBar, "Edit", 0)
+		// Sets up the "Edit" menu. 
+		const Menu editMenu = new Menu(menuBar, "Edit", 0) // @suppress(dscanner.suspicious.unused_variable)
 			.addEntry("Preferences", &openPreferences, "Ctrl+P")
 			.addSeparator()
 			.addEntry("Syntax Highlight", &manualHighlight, "Ctrl+L")
@@ -123,10 +170,10 @@ class Application : TkdApplication {
 			.addEntry("Indent", &indent, "Tab")
 			.addEntry("Unindent", &unindent, "Shift-Tab");
 		
-		// sets opacity on application boot
+		// Sets opacity on application boot.
 		root.setOpacity(gui.preferences.opacity);
 
-		// sets up the keybindings
+		// Sets up the keybindings.
 		root.bind("<Control-f>", &openFile); 											// Open
 		root.bind("<Control-Alt-f>", &openFileInNewTab); 								// Open File In A New Tab
 		root.bind("<Control-s>", &saveFile); 											// Save
@@ -138,16 +185,20 @@ class Application : TkdApplication {
 		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab);						// Reopen Closed Tab
 		root.bind("<Control-p>", &openPreferences);										// Preferences Window
 		root.bind("<Control-l>", &manualHighlight);										// Syntax Highlight
-		root.bind("<Control-b>", &sideBySideMode);										// Enable/Disable Terminal
+		root.bind("<Control-b>", &terminalPanel);										// Enable/Disable Terminal
 		root.bind("<Control-q>", &exitApplication);										// Quit
 
-		// virtual event functions
+		// Sets up virtual events.
 		root.bind("<<ResetTitle>>", &resetTitle);
 		noteBook.bind("<<NotebookTabChanged>>", &lineNumbersUpdate);
 		root.bind("<<Modified>>", &updateLines);
 
+		// Used for submitting command in the terminal using the "Return" key
 		gui.terminalInput.bind("<Return>", &terminalCommand);
 
+		// Check to see if the viewable area of the Text widget has changed.
+		// If it did change the line numbers Text widget to the same positon.
+		// Runs every 10 miliseconds.
 		double lastYViewPos = tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0];
 		root.setIdleCommand(delegate(CommandArgs args){
 			if (tabs.getTextWidgetArray()[noteBook.getCurrentTabId].getYView()[0] != lastYViewPos) {
@@ -157,6 +208,7 @@ class Application : TkdApplication {
 			this.mainWindow.setIdleCommand(args.callback, 10);
 		});
 
+		// On application close get the main window dimensions and save settings to file.
 		root.setProtocolCommand(WindowProtocol.deleteWindow, delegate(CommandArgs args){
 			pref.preferences.width = root.getWidth();
 			pref.preferences.height = root.getHeight();
@@ -165,17 +217,18 @@ class Application : TkdApplication {
 			exitApplication(args);
 		});
 
-		// checks if the preferences file exists if false creates one and tells you about it
+		// Checks if the preferences file exists if false creates one and tells you about it.
 		if (!gui.preferences.preferencesFileExists) {
-			auto dialog = new MessageDialog(this.root, "Preferences File")
+			const MessageDialog dialog = new MessageDialog(this.root, "Preferences File") // @suppress(dscanner.suspicious.unused_variable)
 				.setDetailMessage("Preferences file could not be found and has been created!")
 				.show();
 		}
 	}
 
-	// if selection IS empty adds the closingPairKey and moves the cursor back into pair of symbols, so you can start typing function arguments for example
-	// if selection is NOT empty calls undo to counteract the symbol replacing the selection, then adds the pair of symbols around the selection range
-	public void insertPair(CommandArgs args) { 
+	/// Adds the matching symbol either at insert curosr or around the selection range.
+	/// Only runs after the opening symbol is detected within a Text widget after 1 milisecond.
+	/// This in addition to setReadOnly() is to prevent the symbol replacing the selected text.
+	public void insertPair(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter) 
 		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
 		selectionRange = textWidget.getTagRanges("sel");
 		textWidget.setReadOnly(false);
@@ -187,7 +240,7 @@ class Application : TkdApplication {
 			textWidget.setInsertCursor(end);
 		} else {
 			string cursorPos = textWidget.getInsertCursorIndex();
-			int line = cursorPos.split(".")[0].to!int;
+			const int line = cursorPos.split(".")[0].to!int;
 			int character = cursorPos.split(".")[1].to!int;
 			character += 2;
 			textWidget.insertText(line, character - 1, openingPairKey);
@@ -196,6 +249,8 @@ class Application : TkdApplication {
 		}
 	}
 
+	/// Runs everytime one of the the opening pair symbols is detected within a Text widget.
+	/// Also handles "Tab" for use with indentation of the entire selected text.
 	public void delay(CommandArgs args) {
 		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
 		if (args.uniqueData == "<KeyPress-bracketleft>") {
@@ -241,12 +296,18 @@ class Application : TkdApplication {
 		}
 	}
 
+	/// Runs whenever the text is modified.
+	/// Resets the modified flag and calls lineNumberUpdate().
 	public void updateLines(CommandArgs args) {
 		tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].setModified(false);
 
 		lineNumbersUpdate(args);
 	}
 
+	/// Runs whenever the tab changes and when called by updateLines().
+	/// Check the number of lines in the text to set the lines correctly in the line numbers Text widget.
+	/// Sets the customization options to the ones of the current Text widget.
+	/// When triggered by "NotebookTabChanged" event, changes the line numbers view to match that of the text.
 	public void lineNumbersUpdate(CommandArgs args) {
 		Text textWidget = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()];
 		string numOfLines = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getNumberOfLines().split(".")[0];
@@ -282,12 +343,12 @@ class Application : TkdApplication {
 		
 	}
 
-	// basic terminal implementation
-	// not really suitable for debugging because the main program waits until the process is finished
-	// though it does keep the output its not realtime, only afterwards
+	/// Basic terminal implementation.
+	/// Not really suitable for debugging because the main program waits until the process is finished.
+	/// You can use more than one command at a time by chaining them.
 	// TODO scroll through recent terminal commands using arrows
-	public void terminalCommand(CommandArgs args) {
-		string command = gui.terminalInput.getValue();
+	public void terminalCommand(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
+		string command = gui.terminalInput.getValue(); 
 		gui.terminalInput.setValue("");
 		string shellPath = pref.preferences.shell;
 		
@@ -309,25 +370,27 @@ class Application : TkdApplication {
 			gui.terminalOutput.setReadOnly();
 		}
 
+		// Scrolls to the bottom of the text.
 		gui.terminalOutput.seeText("end");
 	}
-
-	public void about(CommandArgs args) {
+ 
+	/// Launches the default browser to the projects GitHub page.
+	public void about(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		browse("https://github.com/AndrewGrim/NoteMaker-D");
 	}
 
-	// resets the title to the name of the program
-	public void changeTitle(CommandArgs args) {
+	/// Changes the title to the name of the program.
+	public void changeTitle(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		root.setTitle("Note Maker");
 	}
 
-	// resets the title after 1.5 seconds once a <<ResetTitle>> event is detected
-	public void resetTitle(CommandArgs args) {
+	/// Resets the title after 1.5 seconds by calling changeTitle() once a "ResetTitle" event is detected.
+	public void resetTitle(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		root.after(&changeTitle, 1500);
 	}
 
-	// opens and closes the side by side mode
-	public void sideBySideMode(CommandArgs args) {
+	/// Opens and closes the terminal panel.
+	public void terminalPanel(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		if (sideStatus % 2 == 0 || sideStatus == 0) {
 			sideBySide
 				.addPane(side)
@@ -340,8 +403,8 @@ class Application : TkdApplication {
 		sideStatus++;
 	}
 
-	// adds the indentation bindings to all the text widgets so that they can be actually used
-	public void addTextBindings(CommandArgs args) {
+	/// Adds the indentation and symbol pair bindings to all the text widgets so that they can be actually used.
+	public void addTextBindings(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		gui.textMain.bind("<KeyPress-Tab>", &delay);
 		gui.textMain.bind("<Shift-Tab>", &unindent);
 		gui.textMain.bind("<KeyPress-bracketleft>", &delay);
@@ -352,7 +415,7 @@ class Application : TkdApplication {
 		gui.textMain.bind("<KeyPress-quoteleft>", &delay);
 		gui.textMain.bind("<KeyPress-quoteright>", &delay);
 		gui.textMain.bind("<<Modified>>", &saveOnModified);
-		if (!applicationInitialization) {
+		if (!applicationInitialization) { // Passes check once the gui has been initialized.
 			foreach (widget; tabs.getTextWidgetArray()) {
 				widget.bind("<<Modified>>", &saveOnModified);
 				widget.bind("<KeyPress-Tab>", &delay);
@@ -368,8 +431,8 @@ class Application : TkdApplication {
 		}
 	}
 
-	// indents the text, works with both single lines and selection
-	public void indent(CommandArgs args) {
+	/// Indents the text, works with both single lines and selection.
+	public void indent(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		selectionRange = tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getTagRanges("sel");
 		root.cancelAfter(root.after(&changeTitle, 1500)); // cancels the change title event which would cause indent to trigger again if called before the title event finished
 		if (io.getOpeningFile) {
@@ -378,19 +441,19 @@ class Application : TkdApplication {
 		indentation.Indentation.indent(noteBook, tabs.getTextWidgetArray(), selectionRange);
 	}
 
-	// unindents the text, works with both single lines and selection
-	public void unindent(CommandArgs args) {
+	/// Unindents the text, works with both single lines and selection.
+	public void unindent(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		indentation.Indentation.unindent(noteBook, tabs.getTextWidgetArray());
 	}
 
-	// opens a file according to the dialog
-	public void openFile(CommandArgs args) {
+	/// Opens a file with the result from the dialog.
+	public void openFile(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
 		automaticHighlight(args);
 		syntax.setHighlightOnLoad(true);
 	}
 
-	// opens a file in a new tab
+	/// Opens a file in a new tab.
 	public void openFileInNewTab(CommandArgs args) {
 		tabs.createNewTab(args);
 		io.openOpenFileDialog(args, noteBook, tabs.getTextWidgetArray());
@@ -398,23 +461,21 @@ class Application : TkdApplication {
 		syntax.setHighlightOnLoad(true);
 	}
 
-	// saves the file sans dialog using the path from opening or saving the file previously
-	// opens the save dialog if there isnt a path associated with the file
+	/// Saves the file sans dialog using the path from opening or saving the file previously.
+	/// Opens the save dialog if there isn't a path associated with the file.
 	public void saveFile(CommandArgs args) { 
 		io.saveFile(args, noteBook, tabs.getTextWidgetArray());
 		automaticHighlight(args);
 	}
 
-	// saves a file according to the dialog
+	/// Saves a file using the dialog.
 	public void saveFileAs(CommandArgs args) {
 		io.openSaveFileDialog(args, noteBook, tabs.getTextWidgetArray());
 		automaticHighlight(args);
 	}
 
-	// saves the file every time the text widget's contents are modified if the checkbutton is checked
-	// except for: 
-	// when a file is being opened and the syntax is being highlighted or
-	// when a file is being opend
+	/// Saves the file every time the text widget's contents are modified if the preferences option is checked.
+	/// Except for when a file is being opened.
 	public void saveOnModified(CommandArgs args) {
 		if (pref.getSaveOnModified()) {
 			foreach (textWidget; tabs.getTextWidgetArray()) {
@@ -434,34 +495,36 @@ class Application : TkdApplication {
 		}
 	}
 
-	// opens the preferences window
+	/// Opens the preferences window.
 	public void openPreferences(CommandArgs args) {	
 		pref.openPreferencesWindow(args, tabs.getTextWidgetArray());
 	}
 
-	// automatically highlights the defined syntax
+	/// Automatically highlights the defined syntax.
+	/// That is when the file is being saved or loaded and the extension matches one of the supported ones.
 	public void automaticHighlight(CommandArgs args) {
 		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme);
 		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
 		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}
 
-	// manually highlights the defined syntax bypassing the supported extensions check, results will vary
+	/// Manually highlights the defined syntax bypassing the supported extensions check, results will vary.
+	/// Can be used to redo the highlights after changes to file without saving or to apply the newly selected theme.
 	public void manualHighlight(CommandArgs args) {
 		syntax.highlight(args, noteBook, tabs.getTextWidgetArray(), pref.preferences.syntaxTheme, true);
 		lineNumbersTextWidget.setForegroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getForegroundColor());
 		lineNumbersTextWidget.setBackgroundColor(tabs.getTextWidgetArray()[noteBook.getCurrentTabId()].getBackgroundColor());
 	}
 
-	// quits the application
-	public void exitApplication(CommandArgs args) {
+	/// Exits the application.
+	public void exitApplication(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		this.exit();
 		writeln("Application closed!");
 	}
 }
 
-// runs the application.
-void main(string[] args) {
+// Runs the application.
+void main(string[] args) { // @suppress(dscanner.suspicious.unused_parameter)
 	auto app = new Application();             
 	app.run();                                  
 }
