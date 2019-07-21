@@ -8,33 +8,68 @@ import std.exception;
 
 import readpreferences;
 
-// preferences window
+/// Preferences window and associated methods.
 class PreferencesWindow {
 		
-	// variables
+	/// Variable used to access the main window.
 	Window root;
+
+	/// Variable used to acces the origina Text widget. Used for preferences.
 	Text textMain;
+
+	/// Opacity slider widget used to control the transparency.
 	Scale opacitySlider;
+
+	/// Struct meant to hold the preferences read from file.
 	readpreferences.Preferences preferences;
+
+	/// The window containing all the widgets for changing the settings.
 	Window preferencesWindow;
+
+	/// The main frame used to hold the widgets within the preferences window.
 	Frame preferencesFrame;
+
+	/// Button which invokes the font dialog to change the font.
 	Button changeFont;
+
+	/// Button which opens the color dialog to the change the foreground color.
 	Button changeForegroundColor;
+
+	/// Button which opens the color dialog to the change the background color.
 	Button changeBackgroundColor;
+
+	/// Button which opens the color dialog to the change the insert cursor color.
 	Button changeInsertColor;
+
+	/// Button which saves the preferences to file and updates the struct.
 	Button savePreferences;
-	Button cancelPreferences;
+
+	/// Button which opens the color dialog to the change the selection foreground color.
 	Button changeSelectionForegroundColor;
+
+	/// Button which opens the color dialog to the change the selection background color. 
 	Button changeSelectionBackgroundColor;
+
+	/// Array which holds all the Text widget except for the terminal and line numbers.
 	Text[] textWidgetArray;
+
+	/// CheckButton used to control the saveOnModified setting.
 	CheckButton setSaveOnModified;
+
+	/// The Text widget containing the line numbers.
 	Text lineNumbersTextWidget;
+
+	/// The Text widget containing the terminal output.
 	Text terminalOutput;
+
+	/// The Entry box with the shell path or the "default" setting.
 	Entry shellPath;
+
+	/// ComboBox used to pick the syntax color theme used by the application. Requires the highligh to be redone.
 	ComboBox syntaxTheme;
 
 
-	// constructor
+	/// Constructor.
 	this(Window root, Text textMain, readpreferences.Preferences preferences,
 		Text[] textWidgetArray, Text terminalOutput, Text lineNumbersTextWidget) {
 
@@ -46,50 +81,43 @@ class PreferencesWindow {
 		this.lineNumbersTextWidget = lineNumbersTextWidget;
 	}
 
-	// creates the preferences window and displays its contents
-	public void openPreferencesWindow(CommandArgs args, Text[] getTextWidgetArray) {
+	/// Creates the preferences window and displays its contents.
+	public void openPreferencesWindow(CommandArgs args, Text[] getTextWidgetArray) { // @suppress(dscanner.suspicious.unused_parameter)
 
-		// sets up the window relative to root
+		// Sets up the window relative to root.
 		this.preferencesWindow = new Window("Preferences", false);
-			preferencesWindow.setWindowPositon(root.getWidth() / 2 + root.getXPos() - 120, root.getHeight() / 2 + root.getYPos() - 140);
-			preferencesWindow.focus();            
+			preferencesWindow.setWindowPositon(root.getWidth() / 2 + root.getXPos() - 120,
+											   root.getHeight() / 2 + root.getYPos() - 140);
 
-		// the frame that holds all the widgets within the window
 		this.preferencesFrame = new Frame(preferencesWindow)
 			.pack(40, 0);
 
-		// creates the button for changing the font
 		this.changeFont = new Button(preferencesFrame, "Change Font")
 			.setCommand(&openFontDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// creates the button for changing the foreground color
 		this.changeForegroundColor = new Button(preferencesFrame, "Change Foreground Color")
 			.setCommand(&openForegroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// creates the button for changing the background color
 		this.changeBackgroundColor = new Button(preferencesFrame, "Change Background Color")
 			.setCommand(&openBackgroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// creates the button for changing the insert color
 		this.changeInsertColor = new Button(preferencesFrame, "Change Insert Color")
 			.setCommand(&openInsertColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// creates the button for changing the selection foreground color
 		this.changeSelectionForegroundColor = new Button(preferencesFrame, "Change Selection Foreground Color")
 			.setCommand(&openSelectionForegroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// creates the button for changing the selection background color
 		this.changeSelectionBackgroundColor = new Button(preferencesFrame, "Change Selection Background Color")
 			.setCommand(&openSelectionBackgroundColorDialog)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
 		this.setSaveOnModified = new CheckButton(preferencesFrame, "Set Save On Modified")
-			.setCommand(delegate(CommandArgs args) {
+			.setCommand(delegate(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 				if (setSaveOnModified.isChecked()) {
 					preferences.saveOnModified = true;
 				} else {
@@ -101,7 +129,6 @@ class PreferencesWindow {
 				setSaveOnModified.check();
 			}
 
-		// creates the scale "opacitySlider" for changing the opacity/alpha setting
 		this.opacitySlider = new Scale(preferencesFrame)
 			.setFromValue(0.2)
 			.setToValue(1.0)
@@ -116,15 +143,15 @@ class PreferencesWindow {
 				writeln("Couldn't convert opacity string to float!");
 			}
 		
-		auto shellLabel = new Label(preferencesFrame, "Terminal Shell:")
-			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+		Label shellLabel = new Label(preferencesFrame, "Terminal Shell:");
+			shellLabel.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false); 
 
 		this.shellPath = new Entry(preferencesFrame)
 			.setValue(preferences.shell)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
 
-		auto syntaxLabel = new Label(preferencesFrame, "Syntax Theme:")
-			.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
+		Label syntaxLabel = new Label(preferencesFrame, "Syntax Theme:");
+			syntaxLabel.pack(0, 0, GeometrySide.top, GeometryFill.x, AnchorPosition.center, false);
 
 		this.syntaxTheme = new ComboBox(preferencesFrame)
 			.setValue(preferences.syntaxTheme)
@@ -135,20 +162,19 @@ class PreferencesWindow {
 			.setCommand(&savePreferencesToFile)
 			.pack(0, 0, GeometrySide.top, GeometryFill.x);
 
-		// sets up the keybindings for the preferences window
-		this.preferencesWindow.bind("<Escape>", &this.closePreferences); 		// Cancel Preferences
+		this.preferencesWindow.bind("<Escape>", &this.closePreferences); 		// Cancel Preferences.
 
-		textWidgetArray = getTextWidgetArray; // updates the textWidgetArray
+		textWidgetArray = getTextWidgetArray; // Updates the textWidgetArray.
 	}
 
 	public bool getSaveOnModified() {
 		return preferences.saveOnModified;
 	}
 
-	// opens the font dialog allowing you to choose the options
+	/// Opens the font dialog allowing you to choose the options for the font.
 	public void openFontDialog(CommandArgs args) {
-		auto dialog = new FontDialog("Choose a font")
-			.setCommand(delegate(CommandArgs args){
+		FontDialog dialog = new FontDialog("Choose a font");
+			dialog.setCommand(delegate(CommandArgs args){
 				foreach (widget; textWidgetArray) {
 					widget.setFont(args.dialog.font);
 				}
@@ -161,7 +187,7 @@ class PreferencesWindow {
 			savePreferencesToFile(args);
 	}
 
-	// opens the color dialog allowing you to choose the foreground color
+	/// Opens the color dialog allowing you to choose the foreground color.
 	public void openForegroundColorDialog(CommandArgs args) {
 		auto dialog = new ColorDialog("Choose a color")
 			.setInitialColor(Color.black)
@@ -177,7 +203,7 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// opens the color dialog allowing you to choose the background color
+	/// Opens the color dialog allowing you to choose the background color.
 	public void openBackgroundColorDialog(CommandArgs args) {
 		auto dialog = new ColorDialog("Choose a color")
 			.setInitialColor(Color.white)
@@ -193,7 +219,7 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// opens the color dialog allowing you to choose the insert color
+	/// Opens the color dialog allowing you to choose the insert color.
 	public void openInsertColorDialog(CommandArgs args) {
 		auto dialog = new ColorDialog("Choose a color")
 			.setInitialColor(Color.black)
@@ -209,7 +235,7 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// opens the color dialog allowing you to choose the selection foreground color
+	/// Opens the color dialog allowing you to choose the selection foreground color.
 	public void openSelectionForegroundColorDialog(CommandArgs args) {
 		auto dialog = new ColorDialog("Choose a color")
 			.setInitialColor(Color.white)
@@ -226,7 +252,7 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// opens the color dialog allowing you to choose the selection background color
+	/// Opens the color dialog allowing you to choose the selection background color.
 	public void openSelectionBackgroundColorDialog(CommandArgs args) {
 		auto dialog = new ColorDialog("Choose a color")
 			.setInitialColor(Color.gray)
@@ -242,7 +268,7 @@ class PreferencesWindow {
 		savePreferencesToFile(args);
 	}
 
-	// saves the current widget values to the "preferences.txt" file
+	/// Saves the current widget values to the "preferences.config" file and updates the struct.
 	public void savePreferencesToFile(CommandArgs args) {
 		auto f = File(preferences.preferencesFile, "w");
 		f.write("[FONT]\n" ~ textMain.getFont() ~ "\n");
@@ -270,15 +296,15 @@ class PreferencesWindow {
 		closePreferences(args);
 	}
 
-	// closes the preferences window
-	public void closePreferences(CommandArgs args) {
-		this.preferencesWindow.destroy();
+	/// Closes the preferences window when you press "Escape".
+	public void closePreferences(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
+		preferencesWindow.destroy();
 
 		writeln("Preferences window closed!");
 	}
 
-	// changes the opacity based off of the scale widget's value
-	public void changeOpacity(CommandArgs args) {
+	/// Changes the opacity based off of the scale widget's value.
+	public void changeOpacity(CommandArgs args) { // @suppress(dscanner.suspicious.unused_parameter)
 		root.setOpacity(this.opacitySlider.getValue());
 		writeln("alpha: ", this.opacitySlider.getValue());
 	}

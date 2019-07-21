@@ -93,8 +93,8 @@ class Application : TkdApplication {
 				.pack(0, 0, GeometrySide.top, GeometryFill.both, AnchorPosition.center, true);
 
 			// Label to make the line numbers and the text files the same size.
-			const Label paddingLabel = new Label(linesPane, " ") // @suppress(dscanner.suspicious.unused_variable)
-				.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
+			Label paddingLabel = new Label(linesPane, " ");
+				paddingLabel.pack(0, 0, GeometrySide.bottom, GeometryFill.both, AnchorPosition.center, false);
 
 			noteBookLines
 				.addTab("#", linesPane)
@@ -174,19 +174,19 @@ class Application : TkdApplication {
 		root.setOpacity(gui.preferences.opacity);
 
 		// Sets up the keybindings.
-		root.bind("<Control-f>", &openFile); 											// Open
-		root.bind("<Control-Alt-f>", &openFileInNewTab); 								// Open File In A New Tab
-		root.bind("<Control-s>", &saveFile); 											// Save
-		root.bind("<Control-Alt-s>", &saveFileAs); 										// Save As
-		root.bind("<Control-n>", &tabs.createNewTab);									// New Tab
-		root.bind("<Control-w>", &tabs.closeTab);										// Close Tab
-		root.bind("<Control-KeyPress-1>", &tabs.nextTab);								// Next Tab
-		root.bind("<Control-KeyPress-2>", &tabs.previousTab);							// Previous Tab
-		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab);						// Reopen Closed Tab
-		root.bind("<Control-p>", &openPreferences);										// Preferences Window
-		root.bind("<Control-l>", &manualHighlight);										// Syntax Highlight
-		root.bind("<Control-b>", &terminalPanel);										// Enable/Disable Terminal
-		root.bind("<Control-q>", &exitApplication);										// Quit
+		root.bind("<Control-f>", &openFile); 											// Open.
+		root.bind("<Control-Alt-f>", &openFileInNewTab); 								// Open File In A New Tab.
+		root.bind("<Control-s>", &saveFile); 											// Save.
+		root.bind("<Control-Alt-s>", &saveFileAs); 										// Save As.
+		root.bind("<Control-n>", &tabs.createNewTab);									// New Tab.
+		root.bind("<Control-w>", &tabs.closeTab);										// Close Tab.
+		root.bind("<Control-KeyPress-1>", &tabs.nextTab);								// Next Tab.
+		root.bind("<Control-KeyPress-2>", &tabs.previousTab);							// Previous Tab.
+		root.bind("<Control-KeyPress-3>", &tabs.reopenClosedTab);						// Reopen Closed Tab.
+		root.bind("<Control-p>", &openPreferences);										// Preferences Window.
+		root.bind("<Control-l>", &manualHighlight);										// Syntax Highlight.
+		root.bind("<Control-b>", &terminalPanel);										// Enable/Disable Terminal.
+		root.bind("<Control-q>", &exitApplication);										// Quit.
 
 		// Sets up virtual events.
 		root.bind("<<ResetTitle>>", &resetTitle);

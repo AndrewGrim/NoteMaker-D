@@ -8,10 +8,11 @@ import std.algorithm;
 import std.path;
 import std.file;
 
-
+/// Class for highlighting the syntax.
 class Syntax {
 
-	// variables
+	/// Variable used by saveOnModified to determine whether to save upong loading the file.
+	/// Because syntax highlight triggers the flag.
 	bool highlightOnLoad;
 
 	public bool getHighlightOnLoad() {
@@ -22,7 +23,10 @@ class Syntax {
 		highlightOnLoad = state;
 	}
 
-	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, string syntaxTheme, bool manual = false) {
+	/// Main method. Checks if the file extension is supported. If so proceeds.
+	/// Goes through all the syntax text files and uses Tk's Text's built in search to highlight keywords, types, numbers etc.
+	/// Then does a second pass. Going line by line to highlight everything else.
+	public void highlight(CommandArgs args, NoteBook noteBook, Text[] textWidgetArray, string syntaxTheme, bool manual = false) { // @suppress(dscanner.suspicious.unused_parameter) // @suppress(dscanner.style.long_line)
 		string[] supportedLanguages = [".d", ".c", ".cpp", ".h", ".hpp"];
 		if (supportedLanguages.canFind((noteBook.getTabText(noteBook.getCurrentTabId())).extension)
 			|| manual == true) {
@@ -31,7 +35,8 @@ class Syntax {
 
 			textWidget.setForegroundColor("#ffffff");
 			configureTags(textWidget, syntaxTheme);
-			string[] allTags = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function", "comment", "class"];
+			string[] allTags = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string",
+								"escapeCharacter", "function", "comment", "class"];
 			foreach (tag; allTags) {
 				textWidget.removeTag(tag, "1.0", "end");
 			}
@@ -61,6 +66,7 @@ class Syntax {
 		}
 	}
 
+	/// Adds all the required tags to the Text widget. Tag options are different depending on the theme.
 	public void configureTags(Text textWidget, string syntaxTheme) {
 		if (syntaxTheme.toLower == "gruvbox") {
 			// gruvbox
@@ -101,43 +107,46 @@ class Syntax {
 		}	
 	}
 
+	/// Uses Tk's search to highligh certain things grabbed from the syntax text files.
 	public void searchHighlight(Text textWidget, string pattern, string tags) {
 		string[] patternIndexes = textWidget.findAll(pattern);
 		foreach (item; patternIndexes) {
 			string[] tclGarbage = item.split('.');
-			int lineIndex = tclGarbage[0].to!int;
-			int charIndex = tclGarbage[1].to!int;
-			string startIndex = lineIndex.to!string ~ "." ~ charIndex.to!string;
-			int endIndex = charIndex.to!int + pattern.length.to!int;
-			string stopIndex = lineIndex.to!string ~ "." ~ endIndex.to!string;
+			const int lineIndex = tclGarbage[0].to!int;
+			const int charIndex = tclGarbage[1].to!int;
+			const int endIndex = charIndex.to!int + pattern.length.to!int;
+			const string stopIndex = lineIndex.to!string ~ "." ~ endIndex.to!string;
 			textWidget.addTag(tags, item, stopIndex.to!string);
 		}
 	}
 		
+	/// Second pass. Goes through the text line by line and checks for arrays, special symbol, escape characters,
+	/// functions, classes, enums, structs, strings, chars, comments and multi line comments.
 	public void lineByLineHighlight(Text textWidget) {
 		bool isMultiLineComment = false;
-		bool withinString = false;
 		int startIndex;
 		int stopIndex;
-		int patternNumber = 1;
 		int numberOfPattern;
 		int arrayTypeStart;
 		int arrayTypeStop;
-		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number", "char", "string", "escapeCharacter", "function", "class"];
-		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type", "symbol", "number", "comment", "function", "class"];
-		string[] capitalLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+		string[] removeTagsFromComments = ["keyword", "conditional", "loop", "type", "symbol", "number",
+										   "char", "string", "escapeCharacter", "function", "class"];
+		string[] removeTagsFromCharString = ["keyword", "conditional", "loop", "type",
+											 "symbol", "number", "comment", "function", "class"];
+		string[] capitalLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+								   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 		string[] specialTkSymbols = ["[", "]", "{", "}", ";"];
 		string[] arrayTypes = ["string[", "char[", "int[", "float[", "double[", "bool["];
 
 		// TODO refactor the if blocks into separate functions so its not cancer on your eyes
 		for (int line = 1; line <= getNumberOfLinesFromText(textWidget); line++) {
-			// check for special tk characters
+			// Check for special tk characters.
 			foreach (symbol; specialTkSymbols) {
 				if (checkLineForToken(textWidget, line, symbol) != -1) {
 					startIndex = checkLineForToken(textWidget, line, symbol);
 					stopIndex = startIndex + 1;
 					textWidget.addTag("symbol", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-					numberOfPattern = numberOfPatternInLine(textWidget, line, symbol);
+					numberOfPattern = getNumberOfPatternInLine(textWidget, line, symbol);
 					stopIndex += 1;
 					for (int i = 1; i < numberOfPattern; i++) {
 						startIndex = checkLineForNextToken(textWidget, line, stopIndex, symbol) + stopIndex;
@@ -146,7 +155,7 @@ class Syntax {
 					}
 				}
 			}
-			// check for arrays
+			// Check for arrays.
 			foreach (arrayType; arrayTypes) {
 				if (checkLineForToken(textWidget, line, arrayType) != -1) {
 					startIndex = checkLineForToken(textWidget, line, arrayType);
@@ -159,34 +168,34 @@ class Syntax {
 					}
 				}
 			}
-			// check for functions
+			// Check for functions.
 			if (checkLineForToken(textWidget, line, "(") != -1) {
 				stopIndex = checkLineForToken(textWidget, line, "(");
-				string[] whitespace = textWidget.findAllInLine(" ", line);
-				string[] tab = textWidget.findAllInLine("\t", line);
-				string[] openingParentheses = textWidget.findAllInLine("(", line);
-				string[] closingParentheses = textWidget.findAllInLine(")", line);
-				string[] dot = textWidget.findAllInLine(".", line);
-				string[] semicolon = textWidget.findAllInLine(";", line);
-				string[] colon = textWidget.findAllInLine(":", line);
-				string[] exclamation = textWidget.findAllInLine("!", line);
-				string[] openingBrackets = textWidget.findAllInLine("[", line);
-				string[] closingBrackets = textWidget.findAllInLine("]", line);
-				string[] newline = textWidget.findAllInLine("\n", line);
+				string[] whitespace = textWidget.findAllInLine(" ", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] tab = textWidget.findAllInLine("\t", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] openingParentheses = textWidget.findAllInLine("(", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] closingParentheses = textWidget.findAllInLine(")", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] dot = textWidget.findAllInLine(".", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] semicolon = textWidget.findAllInLine(";", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] colon = textWidget.findAllInLine(":", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] exclamation = textWidget.findAllInLine("!", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] openingBrackets = textWidget.findAllInLine("[", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] closingBrackets = textWidget.findAllInLine("]", line); // @suppress(dscanner.suspicious.unmodified)
+				string[] newline = textWidget.findAllInLine("\n", line); // @suppress(dscanner.suspicious.unmodified)
 				string[][string] functionEnds;
 				int[string] lastSymbol;
 
-				int lastWhitespace = 0;
-				int lastTab = 0;
-				int lastOpeningParentheses = 0;
-				int lastClosingParentheses = 0;
-				int lastDot = 0;
-				int lastSemicolon = 0;
-				int lastColon = 0;
-				int lastExclamation = 0;
-				int lastOpeningBrackets = 0;
-				int lastClosingBrackets = 0;
-				int lastNewline = 0;
+				int lastWhitespace = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastTab = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastOpeningParentheses = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastClosingParentheses = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastDot = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastSemicolon = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastColon = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastExclamation = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastOpeningBrackets = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastClosingBrackets = 0; // @suppress(dscanner.suspicious.unmodified)
+				int lastNewline = 0; // @suppress(dscanner.suspicious.unmodified)
 
 				functionEnds["whitespace"] = whitespace;
 				functionEnds["tab"] = tab;
@@ -233,11 +242,11 @@ class Syntax {
 								 lastSymbol["newline"]
 								 ); 
 				if (startIndex != 0) {
-					startIndex += 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
+					startIndex += 1; // Add 1 to define start at the name and not the symbol indicating the end of highlight.
 				}
 				textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
-				stopIndex += 1; // add 1 to step over the opening parentheses since we dont highlight it with the function name
-				int numberOfParentheses = numberOfParenthesesInLine(textWidget, line);
+				stopIndex += 1; // Add 1 to step over the opening parentheses since we dont highlight it with the function name.
+				const int numberOfParentheses = getNumberOfParenthesesInLine(textWidget, line);
 				for (int i = 1; i < numberOfParentheses; i++) {
 					stopIndex = checkLineForNextToken(textWidget, line, stopIndex, "(") + stopIndex;
 
@@ -272,11 +281,11 @@ class Syntax {
 								 lastSymbol["openingBrackets"],
 								 lastSymbol["closingBrackets"],
 								 lastSymbol["newline"]
-								 ) + 1; // add 1 to define start at the name and not the symbol indicating the end of highlight
+								 ) + 1; // Add 1 to define start at the name and not the symbol indicating the end of highlight.
 					textWidget.addTag("function", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 			}
-			// check for class
+			// Check for class.
 			foreach (letter; capitalLetters) {
 				startIndex = checkLineForToken(textWidget, line, letter);
 				if ((startIndex != -1 && textWidget.getChar(line, startIndex - 1) == " ") ||
@@ -299,7 +308,7 @@ class Syntax {
 						}
 					}
 				textWidget.addTag("class", startIndexFn(line, startIndex), startIndexFn(line, stopIndex));
-				numberOfPattern = numberOfPatternInLine(textWidget, line, letter);
+				numberOfPattern = getNumberOfPatternInLine(textWidget, line, letter);
 				for (int i = 1; i < numberOfPattern; i++) {
 					startIndex = checkLineForNextToken(textWidget, line, stopIndex, letter) + stopIndex;
 					if ((startIndex != -1 && textWidget.getChar(line, startIndex - 1) == " ") ||
@@ -325,18 +334,18 @@ class Syntax {
 				}
 				}
 			}
-			// check for literal string
+			// Check for literal string.
 			if (checkLineForToken(textWidget, line, '"') != -1) {
 				startIndex = checkLineForToken(textWidget, line, '"');
 				int fromStartToClose = getStringLength(textWidget, line, '"', startIndex);
 				stopIndex = startIndex + fromStartToClose;
-				int numberOfLiterals = numberOfStringsInLine(textWidget, line);
+				const int numberOfLiterals = getNumberOfStringsInLine(textWidget, line);
 				foreach (item; removeTagsFromCharString) {
 					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 				textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
-					// corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs 
+					// Corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs .
 					startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 					fromStartToClose = 1;
 					stopIndex = startIndex + fromStartToClose;
@@ -354,7 +363,7 @@ class Syntax {
 					}
 					textWidget.addTag("string", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 					if (checkLineForToken(textWidget, line, "\"\\\"\"") != -1) {
-						// corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs 
+						// Corner case where the last " in "\"" would not get tagged, because they're coded to work in pairs. 
 						startIndex = checkLineForNextToken(textWidget, line, stopIndex, '"') + stopIndex;
 						fromStartToClose = 1;
 						stopIndex = startIndex + fromStartToClose;
@@ -365,12 +374,12 @@ class Syntax {
 					}
 				}
 			}
-			// check for char
+			// Check for char.
 			if (checkLineForToken(textWidget, line, "'") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "'");
 				int fromStartToClose = checkLineForNextToken(textWidget, line, startIndex + 1, "'") + 2;
 				stopIndex = startIndex + fromStartToClose;
-				int numberOfLiterals = numberOfCharsInLine(textWidget, line);
+				const int numberOfLiterals = getNumberOfCharsInLine(textWidget, line);
 				foreach (item; removeTagsFromCharString) {
 					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
@@ -385,11 +394,11 @@ class Syntax {
 					textWidget.addTag("char", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 			}
-			// check for escape characters
+			// Check for escape characters.
 			if (checkLineForToken(textWidget, line, "\\") != -1) {
 				startIndex = checkLineForToken(textWidget, line, "\\");
 				stopIndex = startIndex + 2;
-				int numberOfEscapes = numberOfEscapesInLine(textWidget, line);
+				const int numberOfEscapes = getNumberOfEscapesInLine(textWidget, line);
 				foreach (item; removeTagsFromComments) {
 					textWidget.removeTag(item, startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
@@ -406,10 +415,10 @@ class Syntax {
 					textWidget.addTag("escapeCharacter", startIndexFn(line, startIndex), stopIndexFn(line, stopIndex));
 				}
 			}
-			// check for comment
+			// Check for comment.
 			if (checkLineForToken(textWidget, line, "//") != -1 || checkLineForToken(textWidget, line, "///") != -1) {
 				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "//") + 2, '"') == 0) {
-					// check if the next char after // is " and ignore it because the "comment" is part of a string
+					// Check if the next char after // is " and ignore it because the "comment" is part of a string.
 				} else {
 					startIndex = checkLineForToken(textWidget, line, "//");
 					foreach (item; removeTagsFromComments) {
@@ -418,11 +427,11 @@ class Syntax {
 					textWidget.addTag("comment", startIndexFn(line, startIndex), lineEnd(line));
 				}
 			}
-			// check for multiline comment
+			// Check for multiline comment.
 			if (checkLineForToken(textWidget, line, "/*") != -1) {
-				// comment in string literal
+				// Comment in string literal.
 				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "/*") + 2, '"') == 0) {
-					// do nothing
+					// Do nothing.
 				} else {
 					startIndex = checkLineForToken(textWidget, line, "/*");
 					isMultiLineComment = true;
@@ -437,16 +446,16 @@ class Syntax {
 				}
 				textWidget.addTag("comment", lineStart(line), lineEnd(line));
 			}
-			// closes multiline comment
+			// Closes multiline comment.
 			if (checkLineForToken(textWidget, line, "*/") != -1) {
 				if (checkLineForNextToken(textWidget, line, checkLineForToken(textWidget, line, "*/") + 2, '"') == 0) {
-					// do nothing
+					// Do nothing.
 				} else {
 					isMultiLineComment = false;
 					foreach (item; removeTagsFromComments) {
 						textWidget.removeTag(item, startIndexFn(line, startIndex), lineEnd(line));
 					}
-					textWidget.addTag("comment", lineStart(line), lineStringDot(line) ~ endOfMultiLineComment(textWidget, line));
+					textWidget.addTag("comment", lineStart(line), lineStringDot(line) ~ getEndOfMultiLineComment(textWidget, line));
 				}
 			}
 		}
@@ -456,18 +465,22 @@ class Syntax {
 		return (textWidget.getNumberOfLines().split(".")[0]).to!int;
 	}
 
+	/// Checks if the token is in line. If its is returns the index otherwise -1.
 	public int checkLineForToken(Text textWidget, int line, char token) {
 		return (textWidget.getLine(line).countUntil(token)).to!int;
 	}
 
+	/// Checks if the token is in line. If its is returns the index otherwise -1.
 	public int checkLineForToken(Text textWidget, int line, string token) {
 		return (textWidget.getLine(line).countUntil(token)).to!int;
 	}
 
+	/// Checks if there is another token in line. If its is returns the index otherwise -1.
 	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, char token) {
 		return (textWidget.getPartialLine(line, stopIndex).countUntil(token)).to!int;
 	}
 
+	/// Checks if there is another token in line. If its is returns the index otherwise -1.
 	public int checkLineForNextToken(Text textWidget, int line, int stopIndex, string token) {
 		return (textWidget.getPartialLine(line, stopIndex).countUntil(token)).to!int;
 	}
@@ -476,54 +489,55 @@ class Syntax {
 		return (textWidget.getPartialLine(line, startIndex + 1).countUntil(token)).to!int + 2;
 	}
 
-	public int numberOfStringsInLine(Text textWidget, int line) {
+	public int getNumberOfStringsInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count('"')).to!int / 2;
 	}
 
-	public int numberOfCharsInLine(Text textWidget, int line) {
+	public int getNumberOfCharsInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("'")).to!int / 2;
 	}
 
-	public int numberOfEscapesInLine(Text textWidget, int line) {
+	public int getNumberOfEscapesInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("\\")).to!int;
 	}
 
-	public int numberOfPatternInLine(Text textWidget, int line, char pattern) {
+	public int getNumberOfPatternInLine(Text textWidget, int line, char pattern) {
 		return (textWidget.getLine(line).count(pattern)).to!int;
 	}
 
-	public int numberOfPatternInLine(Text textWidget, int line, string pattern) {
+	public int getNumberOfPatternInLine(Text textWidget, int line, string pattern) {
 		return (textWidget.getLine(line).count(pattern)).to!int;
 	}
 
-	public int numberOfParenthesesInLine(Text textWidget, int line) {
+	public int getNumberOfParenthesesInLine(Text textWidget, int line) {
 		return (textWidget.getLine(line).count("(")).to!int;
 	}
 
+	/// Concatenates the line number and the startIndex.
 	public string startIndexFn(int line, int startIndex) {
 		return line.to!string ~ "." ~ startIndex.to!string;
 	} 
 
+	/// Concatenates the line number and the stopIndex.
 	public string stopIndexFn(int line, int stopIndex) {
 		return line.to!string ~ "." ~ stopIndex.to!string;
 	} 
 
+	/// Concatenates line number with "0" which signifies the beginning of the line.
 	public string lineStart(int line) {
 		return line.to!string ~ ".0";
 	}
 
+	/// Concatenates line number with "end" which signifies the end of the line.
 	public string lineEnd(int line) {
 		return line.to!string ~ ".end";
 	}
-
-	public string endOfMultiLineComment(Text textWidget, int line) {
+ 
+	public string getEndOfMultiLineComment(Text textWidget, int line) {
 		return (textWidget.getLine(line).countUntil("*/") + 2).to!string;
 	}
 
-	public string lineString(int line) {
-		return line.to!string;
-	}
-
+	/// Concatenates the line number and the "." which separates the line from the character index.
 	public string lineStringDot(int line) {
 		return line.to!string ~ ".";
 	}	
