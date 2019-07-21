@@ -12,7 +12,7 @@ struct Preferences {
 	string preferencesFile;
 
 	/// Checks if the preferences file exists. Used to create a new default file if it doesn't.
-	bool preferencesFileExists;
+	bool preferencesFileExists = true;
 
 	/// The font used by the program. Examples: "Arial 12", "MS ComicSans 14 bold italic underline overstrike".
 	string font;
@@ -78,8 +78,6 @@ Preferences readPreferencesFile() {
 	preferences.preferencesFile = getcwd() ~ "/preferences.config";
 					
 	File f = File(preferences.preferencesFile, "r");
-
-	preferences.preferencesFileExists = true;
 
 	while (!f.eof) {
 		const string line = chomp(f.readln());

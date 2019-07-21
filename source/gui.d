@@ -52,8 +52,7 @@ class Gui {
 					} catch (ErrnoException error) {
 						writeln("error: ", error);
 
-						// when the preferences files is not found it is created with default values
-						preferences.preferencesFileExists = false;
+						preferences.preferencesFile = getcwd() ~ "/preferences.config";
 
 						File f = File(preferences.preferencesFile, "w");
 						f.write("[FONT]\nArial 12\n",
@@ -65,10 +64,14 @@ class Gui {
 						"[SELECTION BACKGROUND COLOR]\n#b8baba\n",
 						"[SAVE ON MODIFIED]\nfalse\n",
 						"[SHELL]\ndefault\n",
-						"[SYNTAX THEME]\ndefault\n",
+						"[SYNTAX THEME]\nDefault\n",
 						"[WIDTH]\n800\n",
 						"[HEIGHT]\n600");
 						f.close();
+
+						preferences = readpreferences.readPreferencesFile();
+
+						preferences.preferencesFileExists = false;
 
 						writeln("Failed to read preferences file! Preferences file created!");
 					}

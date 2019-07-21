@@ -218,7 +218,6 @@ class Application : TkdApplication {
 		});
 
 		// Checks if the preferences file exists if false creates one and tells you about it.
-		// FIXME doesn't work atm, must have changed when I changed the way I read the file.
 		if (!gui.preferences.preferencesFileExists) {
 			const MessageDialog dialog = new MessageDialog(this.root, "Preferences File") // @suppress(dscanner.suspicious.unused_variable)
 				.setDetailMessage("Preferences file could not be found and has been created!")

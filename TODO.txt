@@ -5,4 +5,3 @@ TODO:
 	
 FIXME:
 	save on modified only works once you load the file
-	create config file doesn't work atm, must have changed when I changed the way I read the file
