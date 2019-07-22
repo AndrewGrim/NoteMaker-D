@@ -574,7 +574,7 @@ Because syntax highlight triggers the flag.
       <div class="dlang">
         <p class="para">
           <code class="code">
-            <span class="ddoc_anchor" id="Syntax.highlight"></span>void <code class="code">highlight</code>(CommandArgs <code class="code">args</code>, NoteBook <code class="code">noteBook</code>, Text[] <code class="code">textWidgetArray</code>, string <code class="code">syntaxTheme</code>, bool <code class="code">manual</code> = false);
+            <span class="ddoc_anchor" id="Syntax.highlight"></span>void <code class="code">highlight</code>(CommandArgs <code class="code">args</code>, NoteBook <code class="code">noteBook</code>, Text[] <code class="code">textWidgetArray</code>, string <code class="code">syntaxTheme</code>, Text <code class="code">terminalWidget</code>, bool <code class="code">manual</code> = false);
 
           </code>
         </p>
@@ -608,7 +608,7 @@ Then does a second pass. Going line by line to <code class="code">highlight</cod
       <div class="dlang">
         <p class="para">
           <code class="code">
-            <span class="ddoc_anchor" id="Syntax.configureTags"></span>void <code class="code">configureTags</code>(Text <code class="code">textWidget</code>, string <code class="code">syntaxTheme</code>);
+            <span class="ddoc_anchor" id="Syntax.configureTags"></span>void <code class="code">configureTags</code>(Text <code class="code">textWidget</code>, string <code class="code">syntaxTheme</code>, Text <code class="code">terminalWidget</code>);
 
           </code>
         </p>
