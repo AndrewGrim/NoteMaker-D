@@ -14,9 +14,11 @@ class Indentation {
 		string insertLine = ((textWidget.getInsertCursorIndex().split("."))[0]) ~ ".0";
 
 		if (!selectionRange.empty) {
+			// selection not empty
 			string start = selectionRange[0];
 			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
+				// selection spans multiple lines
 				const int startLine = start.split(".")[0].to!int;
 				const int endLine = end.split(".")[0].to!int;
 				for (int line = startLine; line <= endLine; line++) {
@@ -25,12 +27,15 @@ class Indentation {
 					textWidget.insertText(tabLine, "\t");
 				}
 			} else {
+				// selection spans only one line
 				textWidget.setReadOnly(false);
 				textWidget.insertText(insertLine, "\t");
 			}
 		} else {
+			// nothing is selected
 			textWidget.setReadOnly(false);
-			textWidget.insertText(insertLine, "\t");
+			const string cursorPos = textWidget.getInsertCursorIndex();
+			textWidget.insertText(cursorPos, "\t");
 		}
 		textWidget.focus();
 	}
@@ -51,9 +56,11 @@ class Indentation {
 
 		string[] selectionRange = textWidget.getTagRanges("sel");
 		if (!selectionRange.empty) {
+			// selection not empty
 			string start = selectionRange[0];
 			string end = selectionRange[1];
 			if (start.split(".")[0].to!int != end.split(".")[0].to!int) {
+				// selection spans multiple lines
 				const int startLine = start.split(".")[0].to!int;
 				const int endLine = end.split(".")[0].to!int;
 				for (int line = startLine; line <= endLine; line++) {
@@ -67,10 +74,12 @@ class Indentation {
 					}
 				}
 			} else {
+				// selection spans only one line
 				textWidget.setReadOnly(false);
 				textWidget.deleteText(indexOfTab, endIndexOfTab);
 			}
 		} else {
+			// nothing is selected
 			if (indexOfTab.length != 0) {
 				textWidget.setReadOnly(false);
 				textWidget.deleteText(indexOfTab, endIndexOfTab);

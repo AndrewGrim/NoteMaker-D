@@ -241,11 +241,10 @@ class Application : TkdApplication {
 		} else {
 			string cursorPos = textWidget.getInsertCursorIndex();
 			const int line = cursorPos.split(".")[0].to!int;
-			int character = cursorPos.split(".")[1].to!int;
-			character += 2;
-			textWidget.insertText(line, character - 1, openingPairKey);
-			textWidget.insertText(line, character, closingPairKey);
-			textWidget.moveInsertCursorBack(line, character + 1);
+			const int character = cursorPos.split(".")[1].to!int;
+			textWidget.insertText(line, character, openingPairKey);
+			textWidget.insertText(line, character + 1, closingPairKey);
+			textWidget.moveInsertCursorBack(line, character + 3);
 		}
 	}
 

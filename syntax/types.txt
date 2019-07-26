@@ -5,6 +5,7 @@ bool
  true
  false
 void 
+ void
 byte 
 ubyte 
 short 

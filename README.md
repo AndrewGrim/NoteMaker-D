@@ -1,6 +1,6 @@
 # NoteMaker-D
 
-What started as an application for making notes, over time became a pretty decent code editor.
+What started as an application for making notes, over time became a pretty decent code editor. Requires Tcl/Tk.
 
 ## Features
 
@@ -40,6 +40,8 @@ What started as an application for making notes, over time became a pretty decen
 - There are two themes built in. My own one and Gruvbox.
 
 ## How To Build
+
+You will need Tcl and Tk 8.6 development libraries!
 
 In order to build this program you will need my own fork of Tkd. Found [here](https://github.com/AndrewGrim/tkd).
 
