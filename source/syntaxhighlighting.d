@@ -7,6 +7,7 @@ import std.string;
 import std.algorithm;
 import std.path;
 import std.file;
+import std.datetime.stopwatch;
 
 /// Class for highlighting the syntax.
 class Syntax {
@@ -44,22 +45,36 @@ class Syntax {
 			string[string] tags = [ "keywords.txt" : "keyword", "conditionals.txt" : "conditional", "loops.txt" : "loop",
 									"types.txt" : "type", "symbols.txt"  : "symbol", "numbers.txt"  : "number"];
 		
+			StopWatch sw;
+			sw.start();
 			foreach (syntaxFile; dirEntries("syntax", SpanMode.shallow, false)) {
 				string filePath = getcwd() ~ "/" ~ syntaxFile;
 				string[] fileContent;
 
-				auto f = File(filePath, "r");
+				File f = File(filePath, "r");
 				while (!f.eof()) {
 					string line = chomp(f.readln());
 					fileContent ~= line;
 				}
 
+				
 				foreach (item; fileContent) {
 					searchHighlight(textWidget, item, tags[filePath.baseName]);
 				}
 			}
-	
+			sw.stop();
+			long timeTaken = sw.peek.total!"msecs";
+			long totalTimeTaken = timeTaken;
+			writeln("search finished in " ~ timeTaken.to!string ~ " miliseconds");
+
+			sw.reset();
+			sw.start();
 			lineByLineHighlight(textWidget);
+			sw.stop();
+			timeTaken = sw.peek.total!"msecs";
+			totalTimeTaken += timeTaken;
+			writeln("linebyline finished in " ~ timeTaken.to!string ~ " miliseconds");
+			writeln("in total: " ~ totalTimeTaken.to!string ~ " miliseconds");
 
 		} else {
 			writeln("Unsupported file type! @syntax");

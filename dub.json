@@ -13,8 +13,9 @@
             "stringImportPaths": [
                 "images/"
             ],
-            "lflags": [
-                "-subsystem:windows"
+            "lflags":[
+                "-subsystem:windows",
+                "-entry:mainCRTStartup"
             ],
             "sourceFiles-windows": [
                 "resources.res"
